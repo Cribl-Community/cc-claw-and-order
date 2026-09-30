@@ -1,0 +1,16 @@
+:root {
+  color-scheme: light dark;
+}
+
+/* Brand accent references (design spec); semantic UI uses Capra tokens. */
+.brand-accent-navy {
+  color: token('color.foreground.neutral.strong');
+}
+
+.brand-accent-gold {
+  color: token('color.foreground.warning.default');
+}
+
+.brand-surface-muted {
+  background: token('color.background.neutral.default');
+}
