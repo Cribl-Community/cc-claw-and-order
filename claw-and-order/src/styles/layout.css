@@ -1,0 +1,48 @@
+:root {
+  color-scheme: light dark;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: token('spacing.lg');
+  padding: token('spacing.lg');
+  min-height: 100%;
+  background: token('color.background.neutral.default');
+  color: token('color.foreground.default');
+}
+
+.app-shell__nav {
+  grid-column: span 12;
+}
+
+@media (min-width: 1024px) {
+  .app-shell__nav {
+    grid-column: span 3;
+  }
+
+  .app-shell__main {
+    grid-column: span 9;
+  }
+}
+
+.app-shell__main {
+  grid-column: span 12;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: token('spacing.lg');
+}
+
+.app-grid-span-12 {
+  grid-column: span 12;
+}
+
+.app-grid-span-6 {
+  grid-column: span 12;
+}
+
+@media (min-width: 768px) {
+  .app-grid-span-6 {
+    grid-column: span 6;
+  }
+}
