@@ -71,11 +71,15 @@ body,
   grid-column: span 12;
 }
 
+.app-grid-span-7 {
+  grid-column: span 12;
+}
+
 .app-grid-span-6 {
   grid-column: span 12;
 }
 
-.app-grid-span-3 {
+.app-grid-span-5 {
   grid-column: span 12;
 }
 
@@ -83,17 +87,37 @@ body,
   grid-column: span 12;
 }
 
+.app-grid-span-3 {
+  grid-column: span 12;
+}
+
+.app-grid-span-2 {
+  grid-column: span 6;
+}
+
 @media (min-width: 768px) {
+  .app-grid-span-7 {
+    grid-column: span 7;
+  }
+
   .app-grid-span-6 {
     grid-column: span 6;
+  }
+
+  .app-grid-span-5 {
+    grid-column: span 5;
+  }
+
+  .app-grid-span-4 {
+    grid-column: span 4;
   }
 
   .app-grid-span-3 {
     grid-column: span 3;
   }
 
-  .app-grid-span-4 {
-    grid-column: span 4;
+  .app-grid-span-2 {
+    grid-column: span 2;
   }
 }
 
@@ -178,8 +202,26 @@ body,
   gap: token('spacing.xs');
 }
 
-.overview-temp-actions {
+.overview-incident-list {
+  list-style: none;
   display: flex;
-  flex-wrap: wrap;
-  gap: token('spacing.sm');
+  flex-direction: column;
+  gap: token('spacing.xs');
+  margin: 0;
+  padding: 0;
 }
+
+.overview-incident-list__item {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  border: none;
+  background: transparent;
+}
+
+.overview-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: token('spacing.lg');
+}
+

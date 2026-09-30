@@ -1,0 +1,103 @@
+.park-map {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  border-radius: token('radius.md');
+  background: token('color.background.neutral.subtle');
+  border: 1px solid token('color.border.neutral.default');
+  overflow: hidden;
+}
+
+.park-map__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 10 / 9;
+}
+
+.park-map__watermark {
+  fill: token('color.foreground.subtle');
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.park-map__zone {
+  fill: token('color.background.neutral.default');
+  stroke: token('color.border.neutral.strong');
+  stroke-width: 0.08;
+  pointer-events: none;
+}
+
+.park-map__hit {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+}
+
+.park-map__zone-label {
+  fill: token('color.foreground.subtle');
+  font-size: 0.35px;
+  font-weight: 600;
+  pointer-events: none;
+  user-select: none;
+}
+
+.park-map__route {
+  fill: none;
+  stroke: token('color.foreground.warning.default');
+  stroke-width: 0.1;
+  stroke-opacity: 0.55;
+  stroke-dasharray: 0.25 0.18;
+  pointer-events: none;
+}
+
+.park-map__marker {
+  cursor: pointer;
+  outline: none;
+}
+
+.park-map__marker:focus-visible .park-map__marker-ring {
+  stroke: token('color.border.focus');
+  stroke-width: 0.12;
+}
+
+.park-map__marker:focus-visible .park-map__hit {
+  stroke: token('color.border.focus');
+  stroke-width: 0.08;
+}
+
+.park-map__marker-ring {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 0.08;
+  pointer-events: none;
+}
+
+.park-map__marker-dot {
+  stroke: token('color.background.neutral.default');
+  stroke-width: 0.06;
+  pointer-events: none;
+}
+
+.park-map__marker--normal .park-map__marker-dot {
+  fill: token('color.foreground.success.default');
+}
+
+.park-map__marker--warning .park-map__marker-dot {
+  fill: token('color.foreground.warning.default');
+}
+
+.park-map__marker--critical .park-map__marker-dot {
+  fill: token('color.foreground.danger.default');
+}
+
+.park-map__marker--unknown .park-map__marker-dot {
+  fill: token('color.foreground.neutral.default');
+}
+
+.park-map__marker-label {
+  fill: token('color.foreground.default');
+  font-size: 0.28px;
+  pointer-events: none;
+  user-select: none;
+}
