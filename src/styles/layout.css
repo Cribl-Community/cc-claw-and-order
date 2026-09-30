@@ -322,3 +322,29 @@ body,
   gap: token('spacing.xs');
 }
 
+.services-alerts {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.sm');
+}
+
+.services-inline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: token('spacing.xs');
+}
+
+.services-cold-storage {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.sm');
+}
+
+.services-cold-storage__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: token('spacing.sm');
+}
+
