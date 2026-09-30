@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { RouterProvider } from '@capra/core'
+import { RouterProvider, Toast } from '@capra/core'
 import { Route, Routes, useHref, useNavigate, type NavigateOptions } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { CompatibilityPage } from './pages/CompatibilityPage'
@@ -27,6 +27,7 @@ function CapraRouterBridge({ children }: { children: ReactNode }) {
 function App() {
   return (
     <ParkProvider>
+      <Toast.Provider />
       <CapraRouterBridge>
         <Routes>
           <Route element={<AppShell />}>
