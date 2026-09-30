@@ -1,6 +1,5 @@
-import type { ConfigSettings } from '../model/types'
+import type { ConfigSettings, OperatorState } from '../model/types'
 
-/** Task 4 expands KV wiring; ConfigSettings defaults only for now. */
 export const DEFAULT_CONFIG: ConfigSettings = {
   scenario: 'normal',
   paused: false,
@@ -13,4 +12,9 @@ export const DEFAULT_CONFIG: ConfigSettings = {
   queueCritMin: 30,
   fenceVoltageMin: 7_500,
   hatchAlertDays: 7,
+}
+
+export const EMPTY_OPERATOR: OperatorState = {
+  acks: {},
+  notes: {},
 }
