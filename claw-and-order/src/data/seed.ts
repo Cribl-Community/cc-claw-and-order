@@ -11,6 +11,7 @@ import type {
   Species,
   Vehicle,
 } from '../model/types'
+import { PARK_OVERVIEW_SERIES } from '../model/selectors'
 
 export const SEED_NOW = Date.parse('2026-09-30T17:00:00Z')
 
@@ -24,6 +25,7 @@ function speciesCatalog(): Species[] {
       displayName: 'Tyrannosaurus rex',
       diet: 'carnivore',
       inherentThreat: 5,
+      agility: 2,
       sizeClass: 'XL',
       behaviorTags: ['apex-predator', 'solitary'],
       tempRangeC: { min: 18, max: 32 },
@@ -38,6 +40,7 @@ function speciesCatalog(): Species[] {
       displayName: 'Velociraptor',
       diet: 'carnivore',
       inherentThreat: 4,
+      agility: 5,
       sizeClass: 'M',
       behaviorTags: ['pack-hunter', 'intelligent'],
       tempRangeC: { min: 20, max: 34 },
@@ -52,6 +55,7 @@ function speciesCatalog(): Species[] {
       displayName: 'Triceratops',
       diet: 'herbivore',
       inherentThreat: 3,
+      agility: 2,
       sizeClass: 'L',
       behaviorTags: ['herd', 'defensive'],
       tempRangeC: { min: 16, max: 30 },
@@ -66,6 +70,7 @@ function speciesCatalog(): Species[] {
       displayName: 'Brachiosaurus',
       diet: 'herbivore',
       inherentThreat: 2,
+      agility: 1,
       sizeClass: 'XL',
       behaviorTags: ['gentle-giant', 'slow-moving'],
       tempRangeC: { min: 18, max: 28 },
@@ -80,6 +85,7 @@ function speciesCatalog(): Species[] {
       displayName: 'Dilophosaurus',
       diet: 'carnivore',
       inherentThreat: 3,
+      agility: 3,
       sizeClass: 'M',
       behaviorTags: ['ambush', 'venom-display'],
       tempRangeC: { min: 22, max: 36 },
@@ -94,6 +100,7 @@ function speciesCatalog(): Species[] {
       displayName: 'Gallimimus',
       diet: 'omnivore',
       inherentThreat: 2,
+      agility: 5,
       sizeClass: 'M',
       behaviorTags: ['flock', 'fast-runner'],
       tempRangeC: { min: 20, max: 33 },
@@ -113,7 +120,7 @@ function enclosures(now: number): Enclosure[] {
       name: 'Apex Predator Paddock',
       zone: 'North Ridge',
       capacity: 2,
-      map: { x: 2, y: 1, w: 3, h: 2 },
+      map: { x: 0.4, y: 0.35, w: 7.2, h: 3.1 },
       attractionIds: ['attr-trex-kingdom'],
       tempC: 26,
       humidityPct: 52,
@@ -127,7 +134,7 @@ function enclosures(now: number): Enclosure[] {
       name: 'Raptor Containment',
       zone: 'East Jungle',
       capacity: 6,
-      map: { x: 6, y: 2, w: 2, h: 2 },
+      map: { x: 8.2, y: 0.35, w: 7.2, h: 3.1 },
       attractionIds: ['attr-raptor-encounter'],
       tempC: 28,
       humidityPct: 62,
@@ -141,7 +148,7 @@ function enclosures(now: number): Enclosure[] {
       name: 'Tri-Horn Valley',
       zone: 'Central Plains',
       capacity: 8,
-      map: { x: 4, y: 4, w: 3, h: 2 },
+      map: { x: 5.5, y: 4.05, w: 4.8, h: 3.1 },
       attractionIds: ['attr-plains-overlook'],
       tempC: 24,
       humidityPct: 48,
@@ -155,7 +162,7 @@ function enclosures(now: number): Enclosure[] {
       name: 'Gentle Giants Meadow',
       zone: 'South Basin',
       capacity: 10,
-      map: { x: 3, y: 7, w: 4, h: 2 },
+      map: { x: 10.8, y: 4.05, w: 4.6, h: 3.1 },
       attractionIds: ['attr-plains-overlook'],
       tempC: 22,
       humidityPct: 58,
@@ -169,7 +176,7 @@ function enclosures(now: number): Enclosure[] {
       name: 'Spitter Glen',
       zone: 'West Wetlands',
       capacity: 3,
-      map: { x: 1, y: 5, w: 2, h: 2 },
+      map: { x: 0.4, y: 4.05, w: 4.6, h: 3.1 },
       attractionIds: [],
       tempC: 27,
       humidityPct: 72,
@@ -199,7 +206,7 @@ function attractions(): Attraction[] {
   return [
     {
       id: 'attr-trex-kingdom',
-      name: 'T. rex Kingdom',
+      name: 'T. Rex Kingdom',
       enclosureIds: ['enc-apex-paddock'],
       status: 'normal',
       queueLength: 42,
@@ -242,7 +249,8 @@ function safariRoutes(now: number): SafariRoute[] {
       stopEnclosureIds: ['enc-trihorn-valley', 'enc-gentle-giants', 'enc-spitter-glen'],
       status: 'running',
       departures: [
-        { id: 'dep-alpha-1', departsAt: dep1, vehicleId: 'veh-ev-01', seats: 12, occupied: 9 },
+        // Charging vehicle — uncovered departure for fleet demo.
+        { id: 'dep-alpha-1', departsAt: dep1, vehicleId: 'veh-ev-03', seats: 12, occupied: 9 },
         { id: 'dep-alpha-2', departsAt: dep2, vehicleId: 'veh-ev-02', seats: 12, occupied: 4 },
       ],
     },
@@ -259,14 +267,14 @@ function safariRoutes(now: number): SafariRoute[] {
   ]
 }
 
-function vehicles(): Vehicle[] {
+function vehicles(now: number): Vehicle[] {
   return [
-    { id: 'veh-ev-01', routeId: 'route-safari-alpha', batteryPct: 88, readiness: 'ready', chargerId: null, seats: 12, occupiedSeats: 9 },
-    { id: 'veh-ev-02', routeId: 'route-safari-alpha', batteryPct: 76, readiness: 'ready', chargerId: null, seats: 12, occupiedSeats: 4 },
-    { id: 'veh-ev-03', routeId: 'route-safari-alpha', batteryPct: 54, readiness: 'charging', chargerId: 'charger-hub-a', seats: 12, occupiedSeats: 0 },
-    { id: 'veh-ev-04', routeId: 'route-safari-beta', batteryPct: 91, readiness: 'ready', chargerId: null, seats: 10, occupiedSeats: 7 },
-    { id: 'veh-ev-05', routeId: 'route-safari-beta', batteryPct: 82, readiness: 'ready', chargerId: null, seats: 10, occupiedSeats: 2 },
-    { id: 'veh-ev-06', routeId: 'route-safari-beta', batteryPct: 61, readiness: 'charging', chargerId: 'charger-hub-b', seats: 10, occupiedSeats: 0 },
+    { id: 'veh-ev-01', model: 'Claw Coach CC-12', routeId: 'route-safari-alpha', batteryPct: 88, readiness: 'ready', chargerId: null, seats: 12, occupiedSeats: 9, lastReadingAt: now - 45_000 },
+    { id: 'veh-ev-02', model: 'Claw Coach CC-12', routeId: 'route-safari-alpha', batteryPct: 76, readiness: 'ready', chargerId: null, seats: 12, occupiedSeats: 4, lastReadingAt: now - 50_000 },
+    { id: 'veh-ev-03', model: 'Claw Coach CC-12', routeId: 'route-safari-alpha', batteryPct: 54, readiness: 'charging', chargerId: 'charger-hub-a', seats: 12, occupiedSeats: 0, lastReadingAt: now - 30_000 },
+    { id: 'veh-ev-04', model: 'Ridge Scout RS-10', routeId: 'route-safari-beta', batteryPct: 91, readiness: 'ready', chargerId: null, seats: 10, occupiedSeats: 7, lastReadingAt: now - 40_000 },
+    { id: 'veh-ev-05', model: 'Ridge Scout RS-10', routeId: 'route-safari-beta', batteryPct: 82, readiness: 'ready', chargerId: null, seats: 10, occupiedSeats: 2, lastReadingAt: now - 55_000 },
+    { id: 'veh-ev-06', model: 'Ridge Scout RS-10', routeId: 'route-safari-beta', batteryPct: 61, readiness: 'charging', chargerId: 'charger-hub-b', seats: 10, occupiedSeats: 0, lastReadingAt: now - 35_000 },
   ]
 }
 
@@ -320,22 +328,137 @@ function lab(now: number): LabState {
     incubators: [
       {
         id: 'inc-01',
+        name: 'Incubator Bay 1',
         speciesId: 'species-velociraptor',
         expectedHatchAt: now + 12 * DAY_MS,
         tempC: 29,
         humidityPct: 68,
-        status: 'normal',
+        tempRangeC: { min: 27, max: 32 },
+        humidityRangePct: { min: 60, max: 75 },
+        door: 'open',
+        powered: true,
+        eggs: [
+          {
+            id: 'egg-raptor-1',
+            speciesId: 'species-velociraptor',
+            weightG: 920,
+            weightRangeG: { min: 850, max: 1_050 },
+          },
+          {
+            id: 'egg-raptor-2',
+            speciesId: 'species-velociraptor',
+            weightG: 980,
+            weightRangeG: { min: 850, max: 1_050 },
+          },
+        ],
+        lastReadingAt: now - 90_000,
       },
       {
         id: 'inc-02',
+        name: 'Incubator Bay 2',
         speciesId: 'species-triceratops',
         expectedHatchAt: now + 21 * DAY_MS,
         tempC: 25,
         humidityPct: 55,
-        status: 'normal',
+        tempRangeC: { min: 22, max: 28 },
+        humidityRangePct: { min: 45, max: 65 },
+        door: 'closed',
+        powered: true,
+        eggs: [
+          {
+            id: 'egg-tri-1',
+            speciesId: 'species-triceratops',
+            // Well below range so tick jitter cannot heal it.
+            weightG: 400,
+            weightRangeG: { min: 1_800, max: 2_200 },
+          },
+          {
+            id: 'egg-tri-2',
+            speciesId: 'species-triceratops',
+            weightG: 2_010,
+            weightRangeG: { min: 1_800, max: 2_200 },
+          },
+        ],
+        lastReadingAt: now - 2 * 60_000,
+      },
+      {
+        id: 'inc-03',
+        name: 'Incubator Bay 3',
+        speciesId: 'species-gallimimus',
+        expectedHatchAt: now + 35 * DAY_MS,
+        tempC: 28,
+        humidityPct: 62,
+        tempRangeC: { min: 25, max: 31 },
+        humidityRangePct: { min: 50, max: 70 },
+        door: 'closed',
+        powered: true,
+        eggs: [
+          {
+            id: 'egg-galli-1',
+            speciesId: 'species-gallimimus',
+            weightG: 540,
+            weightRangeG: { min: 480, max: 620 },
+          },
+        ],
+        lastReadingAt: now - 75_000,
+      },
+      {
+        id: 'inc-04',
+        name: 'Incubator Bay 4',
+        speciesId: 'species-dilophosaurus',
+        expectedHatchAt: now + 18 * DAY_MS,
+        tempC: 30,
+        humidityPct: 70,
+        tempRangeC: { min: 26, max: 34 },
+        humidityRangePct: { min: 55, max: 80 },
+        door: 'closed',
+        powered: true,
+        eggs: [
+          {
+            id: 'egg-dilo-1',
+            speciesId: 'species-dilophosaurus',
+            weightG: 710,
+            weightRangeG: { min: 650, max: 800 },
+          },
+          {
+            id: 'egg-dilo-2',
+            speciesId: 'species-dilophosaurus',
+            weightG: 740,
+            weightRangeG: { min: 650, max: 800 },
+          },
+        ],
+        lastReadingAt: now - 2 * 60_000,
       },
     ],
-    coldStorage: { tempC: 4, status: 'normal', lastReadingAt: now - 8 * 60_000 },
+    machines: [
+      {
+        id: 'lab-cold-storage',
+        name: 'Specimen cold storage',
+        kind: 'cold-storage',
+        tempC: 4,
+        tempRangeC: { min: 1, max: 6 },
+        powered: true,
+        lastReadingAt: now - 90_000,
+      },
+      {
+        id: 'lab-freezer',
+        name: 'Sample freezer',
+        kind: 'freezer',
+        tempC: -18,
+        tempRangeC: { min: -25, max: -15 },
+        powered: true,
+        lastReadingAt: now - 2 * 60_000,
+      },
+      {
+        id: 'lab-airlock',
+        name: 'Lab airlock',
+        kind: 'airlock',
+        tempC: null,
+        tempRangeC: null,
+        powered: true,
+        lastReadingAt: now - 60_000,
+      },
+    ],
   }
 }
 
@@ -352,11 +475,59 @@ function incidents(now: number): Incident[] {
       openedAt: now - 25 * 60_000,
       active: true,
     },
+    {
+      id: 'inc-lab-door',
+      severity: 'warning',
+      title: 'Incubator door open',
+      description: 'Incubator Bay 1 reports an open door. Security and climate risk until secured.',
+      assetIds: ['inc-01'],
+      affectedAttractionIds: [],
+      affectedRouteIds: [],
+      openedAt: now - 12 * 60_000,
+      active: true,
+    },
+    {
+      id: 'inc-lab-weight',
+      severity: 'warning',
+      title: 'Egg weight outside range',
+      description: 'An egg in Incubator Bay 2 is below the required weight band.',
+      assetIds: ['inc-02'],
+      affectedAttractionIds: [],
+      affectedRouteIds: [],
+      openedAt: now - 18 * 60_000,
+      active: true,
+    },
+    {
+      id: 'inc-fleet-uncovered',
+      severity: 'warning',
+      title: 'Safari departure uncovered',
+      description: 'An upcoming departure is assigned to a vehicle that is not ready to roll.',
+      assetIds: ['veh-ev-03', 'route-safari-alpha'],
+      affectedAttractionIds: [],
+      affectedRouteIds: ['route-safari-alpha'],
+      openedAt: now - 8 * 60_000,
+      active: true,
+    },
   ]
+}
+
+function seedOverviewHistory(longestWait: number) {
+  const start = Math.max(0, longestWait - 6)
+  return Array.from({ length: 8 }, (_, i) => ({
+    t: i,
+    values: {
+      criticalIncidents: 0,
+      longestWaitMinutes: Math.round(start + ((longestWait - start) * i) / 7),
+      animalsNeedingAttention: 0,
+    },
+  }))
 }
 
 export function createSeedPark(): ParkModel {
   const now = SEED_NOW
+  const attractionList = attractions()
+  const openWaits = attractionList.filter((a) => a.status !== 'closed').map((a) => a.waitMinutes)
+  const longestWait = openWaits.length === 0 ? 0 : Math.max(...openWaits)
   return {
     tick: 0,
     seededAt: now,
@@ -365,9 +536,9 @@ export function createSeedPark(): ParkModel {
     species: speciesCatalog(),
     dinosaurs: dinosaurs(),
     enclosures: enclosures(now),
-    attractions: attractions(),
+    attractions: attractionList,
     safariRoutes: safariRoutes(now),
-    vehicles: vehicles(),
+    vehicles: vehicles(now),
     chargers: chargers(now),
     lab: lab(now),
     infrastructure: infrastructure(now),
@@ -392,6 +563,6 @@ export function createSeedPark(): ParkModel {
         routeId: 'route-safari-alpha',
       },
     ],
-    readingHistory: {},
+    readingHistory: { [PARK_OVERVIEW_SERIES]: seedOverviewHistory(longestWait) },
   }
 }

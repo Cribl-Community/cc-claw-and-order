@@ -24,8 +24,14 @@ export function ScenarioControls({ compact = false }: { compact?: boolean }) {
         compact ? 'scenario-controls scenario-controls--compact' : 'scenario-controls'
       }
     >
+      {compact ? (
+        <Text variant="body-sm-normal" color="subtle">
+          Scenario
+        </Text>
+      ) : null}
       <SelectField
-        label="Scenario"
+        label={compact ? undefined : 'Scenario'}
+        aria-label="Scenario"
         size="sm"
         items={SCENARIO_ITEMS}
         value={scenario}

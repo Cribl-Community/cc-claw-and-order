@@ -1,17 +1,18 @@
 import {
   EMPTY_CELL_PLACEHOLDER,
-  Link,
   Table,
   ToggleButtonGroup,
   defineColumns,
   type Key,
 } from '@capra/core'
+import { AlertOutlined, Bolt, GroupOutlined, Heart, MappingOutlined, UsersOutlined } from '@capra/icons'
 import { useCallback, useMemo, useState } from 'react'
 
 type SortDescriptor = {
   column: Key
   direction: 'ascending' | 'descending'
 }
+import { speciesSilhouette } from '../assets/art'
 import { MetricCard } from '../components/MetricCard'
 import { PageFrame } from '../components/PageFrame'
 import { StatusIndicator } from '../components/StatusIndicator'
@@ -28,16 +29,24 @@ import { useSimNow } from '../state/useSimNow'
 
 type TabKey = 'dinosaurs' | 'enclosures' | 'species'
 
+type RangeReading = {
+  value: number | null
+  min: number | null
+  max: number | null
+  unit: '°C' | '%'
+}
+
 type DinoRow = {
   id: string
   name: string
+  speciesId: string
   species: string
   enclosure: string
   inherentThreat: number
   operationalRisk: OperationalStatus
   welfare: OperationalStatus
-  tempEnv: string
-  humidityEnv: string
+  tempEnv: RangeReading
+  humidityEnv: RangeReading
   fenceV: string
   gate: string
   gateStatus: OperationalStatus
@@ -50,8 +59,8 @@ type EnclosureRow = {
   occupancy: string
   inherentThreat: string
   operationalRisk: OperationalStatus
-  tempEnv: string
-  humidityEnv: string
+  tempEnv: RangeReading
+  humidityEnv: RangeReading
   fenceV: string
   gate: string
   gateStatus: OperationalStatus
@@ -76,16 +85,74 @@ function formatReading(value: number | null | undefined, unit: string): string {
   return `${rounded}${unit}`
 }
 
-function formatEnvVsReq(
+function toRange(
   value: number | null | undefined,
   range: { min: number; max: number } | undefined,
-  unit: string,
-): string {
-  if (value == null) return EMPTY_CELL_PLACEHOLDER
-  const reading = formatReading(value, unit)
-  if (!range) return reading
-  const ok = value >= range.min && value <= range.max
-  return `${reading} / ${range.min}–${range.max}${unit}${ok ? '' : ' !'}`
+  unit: '°C' | '%',
+): RangeReading {
+  return {
+    value: value ?? null,
+    min: range?.min ?? null,
+    max: range?.max ?? null,
+    unit,
+  }
+}
+
+function formatDelta(delta: number, unit: '°C' | '%'): string {
+  const rounded = Number.isInteger(delta) ? String(delta) : delta.toFixed(1)
+  return unit === '%' ? `${rounded}%` : `${rounded}°`
+}
+
+function RangeCell({ reading }: { reading: RangeReading }) {
+  if (reading.value == null) {
+    return <span className="env-range__missing">{EMPTY_CELL_PLACEHOLDER}</span>
+  }
+
+  const { value, min, max, unit } = reading
+  const valueLabel = formatReading(value, unit)
+  const hasBand = min != null && max != null
+  const impossible = hasBand && min > max
+
+  let tone: 'in' | 'out' | 'unknown' = 'unknown'
+  let state = 'No requirement'
+  let marker: number | null = null
+  if (hasBand && !impossible) {
+    if (value < min) {
+      tone = 'out'
+      state = `${formatDelta(min - value, unit)} below`
+      marker = 0
+    } else if (value > max) {
+      tone = 'out'
+      state = `${formatDelta(value - max, unit)} above`
+      marker = 100
+    } else {
+      tone = 'in'
+      state = 'In range'
+      marker = max === min ? 50 : ((value - min) / (max - min)) * 100
+    }
+  } else if (impossible) {
+    state = 'No shared range'
+  }
+
+  const band = hasBand ? `${min}–${max}${unit}` : null
+
+  return (
+    <div className={`env-range env-range--${tone}`}>
+      <div className="env-range__head">
+        <span className="env-range__value">{valueLabel}</span>
+        <span className="env-range__state">{state}</span>
+      </div>
+      {marker != null ? (
+        <div className="env-range__track" aria-hidden>
+          <span
+            className="env-range__marker"
+            style={{ left: `${8 + (marker / 100) * 84}%` }}
+          />
+        </div>
+      ) : null}
+      {band ? <div className="env-range__band">Required {band}</div> : null}
+    </div>
+  )
 }
 
 function gateToStatus(status: string | undefined): OperationalStatus {
@@ -114,19 +181,6 @@ function gateLabel(status: string | undefined): string {
   }
 }
 
-function statusLabel(status: OperationalStatus): string {
-  switch (status) {
-    case 'normal':
-      return 'Normal'
-    case 'warning':
-      return 'Warning'
-    case 'critical':
-      return 'Critical'
-    case 'unknown':
-      return 'Unknown'
-  }
-}
-
 const STATUS_SORT_RANK: Record<OperationalStatus, number> = {
   normal: 0,
   unknown: 1,
@@ -134,7 +188,18 @@ const STATUS_SORT_RANK: Record<OperationalStatus, number> = {
   critical: 3,
 }
 
+function readingSortValue(value: unknown): number | undefined {
+  if (typeof value !== 'object' || value == null || !('unit' in value) || !('value' in value)) {
+    return undefined
+  }
+  const reading = (value as RangeReading).value
+  return reading ?? Number.POSITIVE_INFINITY
+}
+
 function compareValues(a: unknown, b: unknown): number {
+  const rangeA = readingSortValue(a)
+  const rangeB = readingSortValue(b)
+  if (rangeA != null && rangeB != null) return rangeA - rangeB
   if (
     typeof a === 'string' &&
     typeof b === 'string' &&
@@ -162,22 +227,36 @@ function sortRows<T extends { id: string | number }>(
 
 function NameLink({ label, onOpen }: { label: string; onOpen: () => void }) {
   return (
-    <Link
-      as="button"
+    <button
       type="button"
+      className="table-name-link"
       onClick={(e) => {
-        e.preventDefault()
         e.stopPropagation()
         onOpen()
       }}
     >
       {label}
-    </Link>
+    </button>
   )
 }
 
 function StatusCell({ status }: { status: OperationalStatus }) {
-  return <StatusIndicator status={status} label={statusLabel(status)} />
+  return <StatusIndicator status={status} compact />
+}
+
+function threatTone(level: number): 'ok' | 'warn' | 'bad' {
+  if (level >= 4) return 'bad'
+  if (level >= 3) return 'warn'
+  return 'ok'
+}
+
+function ThreatCell({ value }: { value: number | string }) {
+  if (value === EMPTY_CELL_PLACEHOLDER || value === '' || value == null) {
+    return <>{EMPTY_CELL_PLACEHOLDER}</>
+  }
+  const level = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(level)) return <>{String(value)}</>
+  return <span className={`threat-num threat-num--${threatTone(level)}`}>{value}</span>
 }
 
 function metricStatusForCount(value: number): OperationalStatus {
@@ -219,13 +298,14 @@ export function EnclosuresPage() {
     return {
       id: dino.id,
       name: dino.name,
+      speciesId: dino.speciesId,
       species: species?.displayName ?? EMPTY_CELL_PLACEHOLDER,
       enclosure: enclosure?.name ?? EMPTY_CELL_PLACEHOLDER,
       inherentThreat: species?.inherentThreat ?? 0,
       operationalRisk: selectDinosaurOperationalRisk(park, dino, config, now),
       welfare: dino.welfareStatus,
-      tempEnv: formatEnvVsReq(enclosure?.tempC, species?.tempRangeC, '°C'),
-      humidityEnv: formatEnvVsReq(enclosure?.humidityPct, species?.humidityRangePct, '%'),
+      tempEnv: toRange(enclosure?.tempC, species?.tempRangeC, '°C'),
+      humidityEnv: toRange(enclosure?.humidityPct, species?.humidityRangePct, '%'),
       fenceV: formatReading(enclosure?.fenceVoltage ?? null, ' V'),
       gate: gateLabel(enclosure?.gateStatus),
       gateStatus: gateToStatus(enclosure?.gateStatus),
@@ -264,8 +344,8 @@ export function EnclosuresPage() {
       occupancy: `${occupants.length}/${enc.capacity}`,
       inherentThreat: maxThreat,
       operationalRisk: selectEnclosureOperationalRisk(park, enc, config, now),
-      tempEnv: formatEnvVsReq(enc.tempC, tightTemp, '°C'),
-      humidityEnv: formatEnvVsReq(enc.humidityPct, tightHumidity, '%'),
+      tempEnv: toRange(enc.tempC, tightTemp, '°C'),
+      humidityEnv: toRange(enc.humidityPct, tightHumidity, '%'),
       fenceV: formatReading(enc.fenceVoltage, ' V'),
       gate: gateLabel(enc.gateStatus),
       gateStatus: gateToStatus(enc.gateStatus),
@@ -296,18 +376,28 @@ export function EnclosuresPage() {
   const dinoColumns = useMemo(
     () =>
       defineColumns<DinoRow>([
+        { id: 'name', label: 'Name', allowsSorting: true, render: (_value, item) => <NameLink label={item.name} onOpen={() => openAsset(item.id)} /> },
         {
-          id: 'name',
-          label: 'Name',
+          id: 'species',
+          label: 'Species',
           allowsSorting: true,
-          render: (_value, item) => <NameLink label={item.name} onOpen={() => openAsset(item.id)} />,
+          render: (_value, item) => {
+            const mark = speciesSilhouette(item.speciesId)
+            return (
+              <span className="species-cell">
+                {mark ? (
+                  <img className="species-cell__mark" src={mark} alt="" data-art="silhouette" />
+                ) : null}
+                {item.species}
+              </span>
+            )
+          },
         },
-        { id: 'species', label: 'Species', allowsSorting: true },
         { id: 'enclosure', label: 'Enclosure', allowsSorting: true },
-        { id: 'inherentThreat', label: 'Inherent threat', allowsSorting: true },
+        { id: 'inherentThreat', label: 'Threat', allowsSorting: true, render: (value) => <ThreatCell value={value as number} /> },
         {
           id: 'operationalRisk',
-          label: 'Operational risk',
+          label: 'Risk',
           allowsSorting: true,
           render: (value) => <StatusCell status={value as OperationalStatus} />,
         },
@@ -317,8 +407,18 @@ export function EnclosuresPage() {
           allowsSorting: true,
           render: (value) => <StatusCell status={value as OperationalStatus} />,
         },
-        { id: 'tempEnv', label: 'Temp vs req', allowsSorting: true },
-        { id: 'humidityEnv', label: 'Humidity vs req', allowsSorting: true },
+        {
+          id: 'tempEnv',
+          label: 'Temperature',
+          allowsSorting: true,
+          render: (_value, item) => <RangeCell reading={item.tempEnv} />,
+        },
+        {
+          id: 'humidityEnv',
+          label: 'Humidity',
+          allowsSorting: true,
+          render: (_value, item) => <RangeCell reading={item.humidityEnv} />,
+        },
         { id: 'fenceV', label: 'Fence V', allowsSorting: true },
         {
           id: 'gate',
@@ -343,15 +443,25 @@ export function EnclosuresPage() {
         },
         { id: 'zone', label: 'Zone', allowsSorting: true },
         { id: 'occupancy', label: 'Occupancy', allowsSorting: true },
-        { id: 'inherentThreat', label: 'Inherent threat', allowsSorting: true },
+        { id: 'inherentThreat', label: 'Threat', allowsSorting: true, render: (value) => <ThreatCell value={value as string} /> },
         {
           id: 'operationalRisk',
-          label: 'Operational risk',
+          label: 'Risk',
           allowsSorting: true,
           render: (value) => <StatusCell status={value as OperationalStatus} />,
         },
-        { id: 'tempEnv', label: 'Temp vs req', allowsSorting: true },
-        { id: 'humidityEnv', label: 'Humidity vs req', allowsSorting: true },
+        {
+          id: 'tempEnv',
+          label: 'Temperature',
+          allowsSorting: true,
+          render: (_value, item) => <RangeCell reading={item.tempEnv} />,
+        },
+        {
+          id: 'humidityEnv',
+          label: 'Humidity',
+          allowsSorting: true,
+          render: (_value, item) => <RangeCell reading={item.humidityEnv} />,
+        },
         { id: 'fenceV', label: 'Fence V', allowsSorting: true },
         {
           id: 'gate',
@@ -368,9 +478,24 @@ export function EnclosuresPage() {
   const speciesColumns = useMemo(
     () =>
       defineColumns<SpeciesRow>([
-        { id: 'name', label: 'Name', allowsSorting: true },
+        {
+          id: 'name',
+          label: 'Name',
+          allowsSorting: true,
+          render: (_value, item) => {
+            const mark = speciesSilhouette(item.id)
+            return (
+              <span className="species-cell">
+                {mark ? (
+                  <img className="species-cell__mark" src={mark} alt="" data-art="silhouette" />
+                ) : null}
+                {item.name}
+              </span>
+            )
+          },
+        },
         { id: 'diet', label: 'Diet', allowsSorting: true },
-        { id: 'inherentThreat', label: 'Inherent threat', allowsSorting: true },
+        { id: 'inherentThreat', label: 'Threat', allowsSorting: true, render: (value) => <ThreatCell value={value as number} /> },
         { id: 'sizeClass', label: 'Size', allowsSorting: true },
         { id: 'containmentClass', label: 'Containment', allowsSorting: true },
         { id: 'tempReq', label: 'Temp req', allowsSorting: true },
@@ -421,16 +546,22 @@ export function EnclosuresPage() {
     <PageFrame title="Enclosures & Dinosaurs">
       <div className="app-grid-span-12 overview-kpi-row">
         <MetricCard
+          tone="brand"
+          icon={<AlertOutlined size="sm" aria-hidden />}
           label="Enclosure alerts"
           value={metrics.enclosureAlerts}
           status={metricStatusForCount(metrics.enclosureAlerts)}
         />
         <MetricCard
+          tone="brand"
+          icon={<Heart size="sm" aria-hidden />}
           label="Welfare alerts"
           value={metrics.welfareAlerts}
           status={metricStatusForCount(metrics.welfareAlerts)}
         />
         <MetricCard
+          tone="brand"
+          icon={<Bolt size="sm" aria-hidden />}
           label="Avg fence voltage"
           value={fenceValue}
           status={fenceMetricStatus(
@@ -444,6 +575,8 @@ export function EnclosuresPage() {
             : null}
         </MetricCard>
         <MetricCard
+          tone="brand"
+          icon={<UsersOutlined size="sm" aria-hidden />}
           label="Capacity utilization"
           value={`${metrics.capacityUtilizationPct}%`}
           status={capacityStatus(metrics.capacityUtilizationPct)}
@@ -458,9 +591,9 @@ export function EnclosuresPage() {
           selectedKeys={new Set([tab])}
           onSelectionChange={onTabChange}
           items={[
-            { key: 'dinosaurs', text: 'Dinosaurs' },
-            { key: 'enclosures', text: 'Enclosures' },
-            { key: 'species', text: 'Species' },
+            { key: 'dinosaurs', text: 'Dinosaurs', icon: UsersOutlined },
+            { key: 'enclosures', text: 'Enclosures', icon: MappingOutlined },
+            { key: 'species', text: 'Species', icon: GroupOutlined },
           ]}
         />
       </div>

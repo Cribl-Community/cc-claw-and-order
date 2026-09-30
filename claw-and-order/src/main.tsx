@@ -11,6 +11,7 @@ import './styles/layout.css'
 import './styles/brand.css'
 
 installThemeBridge()
+document.body.classList.add('brand-root')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

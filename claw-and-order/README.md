@@ -1,48 +1,54 @@
 # Claw & Order
 
-Demo operations console for the fictional dinosaur park Claw & Order. Operators see enclosure health, guest impact, and incidents in one simulated park model.
+Operations console for Claw & Order, the living dinosaur park. Control-room staff use it to watch enclosure health, guest impact, fleet and lab status, and open incidents in one connected park model.
 
 This README uses fixed section names and a fixed metadata table so it can be rendered as normal Markdown today and parsed into App Gallery components later.
 
 ## Summary
 
-Claw & Order is a Cribl app for demonstrating a connected operations console. It helps users watch park conditions, investigate incidents and assets, and see how a storm-and-outage scenario cascades across fences, tours, and guest waits.
+Claw & Order is a Cribl app for park operations. It gives operators a single view of containment, animal welfare, attractions, safari fleet, and the hatchery lab — then lets them investigate an incident or asset without leaving the console.
 
 ## What This App Does
 
-Claw & Order runs a labeled **Demo Mode** simulation. Inventory, readings, and incidents are generated in the browser. Operator acknowledgments and notes persist in the app-scoped Cribl KV store.
+Claw & Order is the park’s day-to-day control room. Live park state drives every view. Operator acknowledgments, investigation notes, and threshold settings persist in the app-scoped Cribl KV store so the next shift picks up where the last one left off.
 
-* Primary purpose: show a single park model across overview metrics, an enclosure inventory, and an investigation drawer.
+* Primary purpose: keep enclosure risk, guest experience, and response work in one model.
 * Key capabilities:
-  * Park Overview with KPIs, a schematic map, and a prioritized incident list
-  * Enclosures view with dinosaur, enclosure, and species tables
-  * Scenario switch between Normal and Storm + Outage, plus pause
-  * Investigation drawer with status, freshness, related assets, acknowledge, and notes
+  * **Park Overview** — KPIs, schematic park map, and a prioritized incident list
+  * **Enclosures** — dinosaurs, habitats, and species with threat, welfare, fence, and environment readings
+  * **Compatibility** — assess whether two species can share an enclosure before anyone moves animals
+  * **Park Services** — attractions, queues, power, and weather impact on guests
+  * **Fleet** — safari vehicles, chargers, routes, and departure coverage
+  * **Lab** — incubators, cold storage, egg weights, and airlock status
+  * **Investigation drawer** — status, freshness, related assets, acknowledge, and notes
+  * **Scenario controls** — Normal operations or Storm + Outage, with pause for freeze-frame review
+  * **Settings** — alert thresholds, density, and operator preferences
 * Intended users:
-  * Demo presenters
-  * Builders learning the Cribl App Platform
+  * Park control-room operators
+  * Shift supervisors and incident responders
+  * Enclosure, fleet, and lab leads who need shared situational awareness
 * Works with:
-  * Any Cribl deployment that can install Apps (Cribl.Cloud or hybrid). The demo does not call Stream, Edge, Search, or Lake product APIs.
-
-Compatibility, Park Services, and Settings are present in navigation as placeholders.
+  * Any Cribl deployment that can install Apps (Cribl.Cloud or hybrid). The console does not call Stream, Edge, Search, or Lake product APIs.
 
 ## When To Use This App
 
-* Walk through a fictional operations console inside Cribl without connecting production telemetry.
-* Show how one in-memory model keeps guest counts, queues, and enclosure status consistent.
-* Show KV persistence for operator acknowledgments and notes across reloads.
+* Run the park control room from one Cribl-hosted console.
+* Track how weather and power events cascade into fence voltage, safari coverage, and guest waits.
+* Acknowledge incidents and leave notes that survive a reload for the next operator.
+* Compare species compatibility before cohabitation decisions.
+* Tune alert thresholds for queues, fence voltage, and hatch windows.
 
 ## Before You Install
 
 * Required Cribl product or deployment type: a Cribl Leader that supports Apps. No Stream, Edge, Search, or Lake group is required.
 * Required permissions or roles: a user who can open the installed app. App-scoped KV access is granted when an admin shares the app. No extra product API policies are declared.
 * Required external systems or APIs: none.
-* Required configuration values: none. The simulation starts from built-in defaults.
-* Known limits or prerequisites: Demo Mode cannot be turned off. Data is simulated, not live park or Cribl telemetry.
+* Required configuration values: none. The park boots from built-in defaults and loads any saved settings from KV.
+* Known limits or prerequisites: the console is self-contained inside Cribl. Acknowledgments and notes need KV to persist across reloads.
 
 ## Installation
 
-Use Marketplace installation as the default path whenever the app is available there. This gives users the easiest install path and makes future upgrades simpler.
+Use Marketplace installation as the default path whenever the app is available there. This gives operators the easiest install path and makes future upgrades simpler.
 
 ### Install From Marketplace or URL
 1. Go to Apps in your Cribl environment.
@@ -68,13 +74,13 @@ Use this path when the app has not yet been published to the Cribl Marketplace o
 
 ## Configuration
 
-No setup form is required. The app loads saved settings from KV when present and otherwise uses these defaults. Scenario and pause are changed from Park Overview. The Settings page does not edit these values yet.
+No setup form is required. The app loads saved settings from KV when present and otherwise uses these defaults. Scenario and pause are available from Park Overview. Thresholds and preferences are edited under Settings.
 
 | Setting | Required | Description | Example | Scope |
 |---|---|---|---|---|
-| Scenario | No | Simulation overlay. `normal` or `stormOutage`. | `normal` | per-app |
-| Paused | No | Freezes simulation ticks while paused. | `false` | per-app |
-| Tick interval | No | Milliseconds between simulation ticks. | `5000` | per-app |
+| Scenario | No | Operations overlay. `normal` or `stormOutage`. | `normal` | per-app |
+| Paused | No | Freezes park ticks while paused. | `false` | per-app |
+| Tick interval | No | Milliseconds between park state updates. | `5000` | per-app |
 | Stale threshold | No | Seconds after which a reading is treated as stale. | `300` | per-app |
 | Guest capacity | No | Capacity used to color the guests-in-park KPI. | `5000` | per-app |
 | Queue warn / crit | No | Wait minutes that mark warning and critical queue status. | `15` / `30` | per-app |
@@ -87,20 +93,23 @@ Blank or missing KV values fall back to the defaults above. Settings are shared 
 
 ### Typical Workflow
 1. Open the app from the Apps page.
-2. Confirm the Demo Mode badge on Park Overview.
-3. Review KPIs, the park map, and the incident list.
-4. Select an incident or map asset to open the investigation drawer. Acknowledge an incident or save a note.
-5. Switch the scenario to Storm + Outage to see cascading fence, power, and guest-wait impact. Pause to freeze ticks.
-6. Open Enclosures to compare inherent threat with current operational risk.
+2. Start on Park Overview: KPIs, park map, and the incident list.
+3. Select an incident or map asset to open the investigation drawer. Acknowledge an incident or save a note.
+4. Open Enclosures to review threat, operational risk, welfare, and fence readings.
+5. Use Compatibility before moving animals between habitats.
+6. Check Services for queues and guest impact; Fleet for safari readiness; Lab for incubators and cold storage.
+7. Switch to Storm + Outage when you need to rehearse cascading fence, power, and wait impact. Pause to freeze the board.
+8. Adjust thresholds in Settings when warn or critical bands need a tune.
 
 ### First-Run Checklist
-* Open Park Overview and confirm Demo Mode is visible.
+* Open Park Overview and confirm KPIs and the incident list load.
 * Select an incident and save a note, then reload and confirm the note is still there.
 * Switch to Storm + Outage and confirm overview status changes, then switch back to Normal.
+* Open Fleet and Lab and confirm vehicle, charger, incubator, and cold-storage panels render.
 
 ## Permissions
 
-Core demo behavior does not call Cribl product configuration APIs. The app reads and writes its own KV keys. If KV is unavailable, the simulation still runs on defaults and a load error is recorded in app state. Acknowledge and note saves report a failure and keep the local change so you can retry.
+Core console behavior does not call Cribl product configuration APIs. The app reads and writes its own KV keys. If KV is unavailable, the park still runs on defaults and a load error is recorded in app state. Acknowledge and note saves report a failure and keep the local change so you can retry.
 
 ### Cribl API Endpoints Used
 
@@ -137,28 +146,26 @@ None.
 | `operator/acks` | Acknowledgment time and operator id by incident id. An acknowledgment does not clear the incident. |
 | `operator/notes` | Note text and update time by incident or asset id |
 
-Park inventory, live readings, and the simulation clock stay in memory and reset when the page reloads. Acknowledgments and notes are shared for the app through KV, not private to one browser. Uninstall cleanup of KV data follows the Cribl Apps platform. There is no backend and no scheduled job.
+Park inventory, live readings, and the operations clock stay in the console session and refresh while the app is open. Acknowledgments and notes are shared for the app through KV, not private to one browser. Uninstall cleanup of KV data follows the Cribl Apps platform. There is no backend and no scheduled job.
 
 ## Support
 
 ### Community Built
-This app is provided as a community contribution. It may be useful for learning, experimentation, or shared workflows, but it does not carry an official support commitment from Cribl. Maintenance and updates depend on the community maintainer. Open an issue on the [GitHub repository](https://github.com/Cribl-Community/placeholder/issues).
+This app is provided as a community contribution. It may be useful for shared park workflows and learning the Cribl App Platform, but it does not carry an official support commitment from Cribl. Maintenance and updates depend on the community maintainer. Open an issue on the [GitHub repository](https://github.com/Cribl-Community/cc-claw-and-order/issues).
 
 ## Known Limitations
 
-* Demo Mode is always on. Nothing in the app is live park or Cribl telemetry.
-* Compatibility, Park Services, and Settings are navigation placeholders.
-* Scenario and pause changes from Park Overview are not written back to KV.
-* Compatibility moves are not applied to inventory.
-* The simulation is single-browser. KV shares acknowledgments, notes, and saved settings, not live tick state.
-* Reset of operator KV state exists in code and requires an explicit confirmation before it is exposed in the UI.
+* Compatibility assessments are advisory — they do not automatically move animals in inventory.
+* Live tick state is per browser session. KV shares acknowledgments, notes, and saved settings across operators, not the in-session clock.
+* Reset of operator KV state requires an explicit confirmation in Settings.
+* The console does not ingest Stream, Edge, Search, or Lake product telemetry.
 
 ## Troubleshooting
 
 ### The App Opens But Some Features Do Not Work
 Possible causes:
-* Compatibility, Services, or Settings still show placeholder copy. Use Park Overview and Enclosures.
 * KV load failed, so settings and notes fell back to defaults. Check that the app is installed and shared with your user.
+* Scenario or pause controls are on Park Overview; threshold edits live under Settings.
 
 ### The App Cannot Connect To An API Or Service
 Check:
@@ -169,7 +176,7 @@ Check:
 Check:
 * You installed the `.tgz` from `build/`, not the raw repository.
 * The packaged version matches the release you intended to install.
-* `npm run dev` outside Cribl has no KV host, so saves report `CRIBL_API_URL missing` and the simulation still runs locally.
+* `npm run dev` outside Cribl has no KV host, so saves report `CRIBL_API_URL missing` and the console still runs locally.
 
 ## Development
 
@@ -187,8 +194,8 @@ The app is frontend-only. There is no `config/backend.yml`. `apps build` in `npm
 Main source:
 
 * `src/App.tsx` — routes
-* `src/pages/` — Overview, Enclosures, and placeholder pages
-* `src/state/ParkProvider.tsx` — park model, simulation clock, KV load and save
+* `src/pages/` — Overview, Enclosures, Compatibility, Services, Fleet, Lab, Settings
+* `src/state/ParkProvider.tsx` — park model, operations clock, KV load and save
 * `src/data/seed.ts` — starting inventory
 * `src/sim/` — tick, scenario overlay, deterministic PRNG
 * `src/model/` — types and selectors
@@ -200,18 +207,19 @@ src/
   App.tsx
   main.tsx
   host-theme.ts
+  assets/
   components/
+  compatibility/
   data/
+  kv/
   model/
   pages/
   sim/
   state/
-  kv/
   styles/
 config/
   policies.yml
   proxies.yml
-assets/
 docs/
 public/
 build/                 packaged .tgz (created by npm run package)
@@ -245,14 +253,18 @@ Use this table as the canonical source for gallery fields. Keep the left column 
 | Author | John Owen |
 | Support Model | community-built |
 | Support Label | Community Built |
-| Support Contact | https://github.com/Cribl-Community/placeholder/issues |
+| Support Contact | https://github.com/Cribl-Community/cc-claw-and-order/issues |
 | License | None |
 | License File | |
 | Product Tags | |
-| Category | operations demo |
+| Category | operations |
 | Audience | end-user, builder |
 | Availability | preview |
 | Requires External Access | no |
-| Repository | https://github.com/Cribl-Community/placeholder |
+| Repository | https://github.com/Cribl-Community/cc-claw-and-order |
 | Documentation | https://docs.cribl.io/apps |
 | README Schema Version | 1.0 |
+
+---
+
+**Disclaimer:** Claw & Order is a fictional park. This example app was built for the CriblCON 26 App Hackathon.

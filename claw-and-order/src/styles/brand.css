@@ -2,6 +2,81 @@
   color-scheme: light dark;
 }
 
+/*
+ * Control-room palette for every surface, including portaled drawers and modals.
+ * Remaps Capra's neutral steps: page charcoal, cards navy, type ivory, warning amber.
+ */
+body.brand-root {
+  background: #17232e;
+  color: #f6ebd2;
+  --cds2-color-background-application: #17232e;
+  --cds2-color-background-panel-solid: #0b1c2c;
+  --cds2-color-background-panel-translucent: #0b1c2ce6;
+  --cds2-color-background-surface: #0b1c2ce6;
+  --cds2-color-background-neutral-default: #0b1c2c;
+  --cds2-color-background-neutral-subtle: #13202c;
+  --cds2-color-background-neutral-hover: #243646;
+  --cds2-color-background-neutral-selected: #243646;
+  --cds2-color-background-scrim: #020e1b99;
+  --cds2-color-foreground-default: #f6ebd2;
+  --cds2-color-foreground-subtle: #acbac6;
+  --cds2-color-foreground-neutral-default: #acbac6;
+  --cds2-color-foreground-neutral-strong: #f6ebd2;
+  --cds2-color-foreground-placeholder: #8fa0ae;
+  --cds2-color-border-neutral-default: #243646;
+  --cds2-color-border-neutral-subtle: #243646;
+  --cds2-color-border-neutral-strong: #3d5a72;
+  --cds2-color-foreground-warning-default: #f2ad24;
+  --cds2-color-background-warning-solid-default: #f2ad24;
+  --cds2-color-foreground-warning-contrast: #0b1c2c;
+  --cds2-color-brand-2: #243646;
+  --cds2-color-brand-11: #f2ad24;
+  --cds2-color-background-brand-subtle: #243646;
+  --cds2-color-foreground-brand-default: #f2ad24;
+  --cds2-color-foreground-link: #f2ad24;
+  --cds2-core-color-cribl-teal-2: #243646;
+  --cds2-core-color-cribl-teal-11: #f2ad24;
+  --cds2-color-background-info-subtle: #13202c;
+  --cds2-color-background-info-default: #0b1c2c;
+  --cds2-color-background-info-hover: #243646;
+  --cds2-color-background-info-selected: #243646;
+  --cds2-color-background-info-surface: #13202ccc;
+  --cds2-color-foreground-info-default: #f6ebd2;
+  --cds2-color-foreground-info-strong: #f6ebd2;
+  --cds2-color-border-info-default: #3d5a72;
+  --cds2-color-border-info-subtle: #3d5a72;
+  --cds2-color-border-info-strong: #acbac6;
+  --cds2-color-background-danger-subtle: #3d2426;
+  --cds2-color-foreground-danger-default: #f0a8a4;
+  --cds2-color-danger-11: #f0a8a4;
+  --cds2-color-background-success-subtle: #163028;
+  --cds2-color-foreground-success-default: #7dcea0;
+  --cds2-color-success-11: #7dcea0;
+  --cds2-color-background-warning-subtle: #3a2e14;
+}
+
+body.brand-root .app-shell {
+  background: #17232e;
+  color: #f6ebd2;
+}
+
+body.brand-root textarea,
+body.brand-root input:not([type='checkbox']):not([type='radio']):not([type='range']),
+body.brand-root button[aria-haspopup='listbox'] {
+  background-color: #0b1c2c;
+  color: #f6ebd2;
+}
+
+body.brand-root :has(> textarea) {
+  background-color: #0b1c2c;
+}
+
+/* Multi-select trigger is a role=group shell with a hardcoded light fill. */
+body.brand-root div[role='group']:not(.compat-checkbox-list) {
+  background-color: #0b1c2c;
+  color: #f6ebd2;
+}
+
 /* Brand accent references (design spec); semantic UI uses Capra tokens. */
 .brand-accent-navy {
   color: token('color.foreground.neutral.strong');

@@ -1,8 +1,7 @@
-import { createSeedPark, SEED_NOW } from '../data/seed'
-import { deriveOperationalStatus } from '../model/status'
+import { createSeedPark } from '../data/seed'
 import type { ConfigSettings, ParkModel, ScenarioId } from '../model/types'
 
-const STALE_READING_AT = SEED_NOW - 600_000
+const STALE_OFFSET_MS = 600_000
 
 function clonePark(park: ParkModel): ParkModel {
   return structuredClone(park)
@@ -32,7 +31,7 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
         fenceVoltage: null,
         tempC: null,
         humidityPct: null,
-        lastReadingAt: STALE_READING_AT,
+        lastReadingAt: park.seededAt - STALE_OFFSET_MS,
       }
     }
     return {
@@ -61,22 +60,13 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
     status: a.status === 'closed' ? a.status : ('warning' as const),
   }))
 
-  const coldTempC = 9
-  const coldLastReadingAt = park.seededAt
   next.lab = {
     ...next.lab,
-    coldStorage: {
-      tempC: coldTempC,
-      status: deriveOperationalStatus({
-        value: coldTempC,
-        lastReadingAt: coldLastReadingAt,
-        now: park.seededAt,
-        staleThresholdSec: config.staleThresholdSec,
-        warnAbove: 6,
-        critAbove: 10,
-      }),
-      lastReadingAt: coldLastReadingAt,
-    },
+    machines: next.lab.machines.map((machine) => ({
+      ...machine,
+      powered: false,
+      lastReadingAt: park.seededAt,
+    })),
   }
 
   next.guestsInPark = Math.round(next.guestsInPark * 1.05)
@@ -87,7 +77,7 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
       rating: 2,
       summary: 'Safari cancelled without enough notice at the gate.',
       responseCount: 34,
-      createdAt: SEED_NOW - 20 * 60_000,
+      createdAt: park.seededAt - 20 * 60_000,
       routeId: 'route-safari-alpha',
     },
     {
@@ -95,7 +85,7 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
       rating: 1,
       summary: 'Wait times posted online did not match the park boards.',
       responseCount: 19,
-      createdAt: SEED_NOW - 15 * 60_000,
+      createdAt: park.seededAt - 15 * 60_000,
       attractionId: 'attr-trex-kingdom',
     },
   ]
@@ -109,7 +99,7 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
       assetIds: ['infra-power-north'],
       affectedAttractionIds: ['attr-trex-kingdom', 'attr-raptor-encounter'],
       affectedRouteIds: ['route-safari-beta'],
-      openedAt: SEED_NOW - 10 * 60_000,
+      openedAt: park.seededAt - 10 * 60_000,
       active: true,
     },
     {
@@ -120,13 +110,16 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
       assetIds: ['enc-apex-paddock'],
       affectedAttractionIds: ['attr-trex-kingdom'],
       affectedRouteIds: [],
-      openedAt: SEED_NOW - 8 * 60_000,
+      openedAt: park.seededAt - 8 * 60_000,
       active: true,
     },
   ]
 
   next.incidents = [
-    ...next.incidents.map((inc) => ({ ...inc, active: inc.severity === 'warning' ? true : inc.active })),
+    ...next.incidents.map((inc) => ({
+      ...inc,
+      active: inc.severity === 'warning' ? true : inc.active,
+    })),
     ...stormIncidents,
   ]
 
@@ -145,7 +138,11 @@ function applyNormal(park: ParkModel): ParkModel {
   }
 }
 
-export function applyScenario(park: ParkModel, scenario: ScenarioId, config: ConfigSettings): ParkModel {
+export function applyScenario(
+  park: ParkModel,
+  scenario: ScenarioId,
+  config: ConfigSettings,
+): ParkModel {
   if (scenario === 'stormOutage') {
     return applyStormOutage(park, config)
   }

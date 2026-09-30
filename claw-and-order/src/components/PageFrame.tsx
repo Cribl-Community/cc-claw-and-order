@@ -1,29 +1,30 @@
-import { Text } from '@capra/core'
 import type { ReactNode } from 'react'
-import logo from '../assets/claw_and_order_logo.png'
-import { DemoModeBadge } from './DemoModeBadge'
+import { PageHeader, type PageHeaderVariant } from './PageHeader'
 
 export function PageFrame({
   title,
   actions,
+  tone = 'brand',
+  headerVariant = 'compact',
+  description,
   children,
 }: {
   title: string
   actions?: ReactNode
+  tone?: 'default' | 'brand'
+  /** Overview uses `full` (wordmark); other pages use `compact` (icon). */
+  headerVariant?: PageHeaderVariant
+  description?: string
   children: ReactNode
 }) {
   return (
-    <div className="page-frame">
-      <div className="page-frame__chrome">
-        <img className="page-frame__logo" src={logo} alt="Claw & Order" width={240} />
-        <DemoModeBadge />
-      </div>
-      <div className="page-frame__header">
-        <Text as="h1" variant="heading">
-          {title}
-        </Text>
-        {actions != null ? <div className="page-frame__actions">{actions}</div> : null}
-      </div>
+    <div className={tone === 'brand' ? 'page-frame page-frame--brand' : 'page-frame'}>
+      <PageHeader
+        title={title}
+        actions={actions}
+        variant={headerVariant}
+        description={description}
+      />
       <div className="page-content-grid">{children}</div>
     </div>
   )
