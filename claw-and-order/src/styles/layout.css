@@ -2,32 +2,66 @@
   color-scheme: light dark;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 .app-shell {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: token('spacing.lg');
-  padding: token('spacing.lg');
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100%;
   background: token('color.background.neutral.default');
   color: token('color.foreground.default');
 }
 
-.app-shell__nav {
-  grid-column: span 12;
+.app-shell__main {
+  min-width: 0;
+  padding: token('spacing.lg');
 }
 
 @media (min-width: 1024px) {
-  .app-shell__nav {
-    grid-column: span 3;
-  }
-
-  .app-shell__main {
-    grid-column: span 9;
+  .app-shell {
+    grid-template-columns: auto minmax(0, 1fr);
   }
 }
 
-.app-shell__main {
-  grid-column: span 12;
+.page-frame {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.lg');
+}
+
+.page-frame__chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: token('spacing.md');
+}
+
+.page-frame__logo {
+  display: block;
+  width: min(240px, 100%);
+  height: auto;
+}
+
+.page-frame__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: token('spacing.md');
+}
+
+.page-frame__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: token('spacing.md');
+}
+
+.page-content-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: token('spacing.lg');
@@ -41,8 +75,47 @@
   grid-column: span 12;
 }
 
+.app-grid-span-3 {
+  grid-column: span 12;
+}
+
+.app-grid-span-4 {
+  grid-column: span 12;
+}
+
 @media (min-width: 768px) {
   .app-grid-span-6 {
     grid-column: span 6;
   }
+
+  .app-grid-span-3 {
+    grid-column: span 3;
+  }
+
+  .app-grid-span-4 {
+    grid-column: span 4;
+  }
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: token('spacing.xs');
+}
+
+.scenario-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: token('spacing.md');
+}
+
+.scenario-controls--compact {
+  gap: token('spacing.sm');
+}
+
+.scenario-controls__pause {
+  display: inline-flex;
+  align-items: center;
+  gap: token('spacing.xs');
 }
