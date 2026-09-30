@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createSeedPark } from '../data/seed'
+import { isReadingStale } from '../model/status'
 import { DEFAULT_CONFIG } from '../state/defaults'
 import { applyScenario } from './scenario'
 
@@ -16,6 +17,16 @@ describe('applyScenario stormOutage', () => {
     expect(storm.safariRoutes.some((r) => r.status === 'delayed' || r.status === 'cancelled')).toBe(true)
     expect(storm.incidents.some((i) => i.active && i.severity === 'critical')).toBe(true)
     expect(storm.attractions.some((a) => a.waitMinutes >= DEFAULT_CONFIG.queueWarnMin)).toBe(true)
+  })
+
+  it('cold storage warning uses a fresh reading (not warning+stale)', () => {
+    const base = createSeedPark()
+    const storm = applyScenario(base, 'stormOutage', DEFAULT_CONFIG)
+    const cs = storm.lab.coldStorage
+    const stale = isReadingStale(cs.lastReadingAt, storm.seededAt, DEFAULT_CONFIG.staleThresholdSec)
+    expect(cs.status).toBe('warning')
+    expect(stale).toBe(false)
+    expect(cs.status === 'warning' && stale).toBe(false)
   })
 })
 

@@ -49,7 +49,7 @@ function syncIncidents(park: ParkModel, config: ConfigSettings, now: number): In
 }
 
 export function advanceTick(park: ParkModel, config: ConfigSettings, now: number): ParkModel {
-  if (config.paused) {
+  if (config.paused || park.paused) {
     return park
   }
 
@@ -105,10 +105,14 @@ export function advanceTick(park: ParkModel, config: ConfigSettings, now: number
       return { ...inc, tempC, humidityPct, status }
     }),
     coldStorage: (() => {
-      const tempC =
-        park.lab.coldStorage.tempC == null
-          ? null
-          : nudge(park.lab.coldStorage.tempC, jitter() * 0.2, -2, 12)
+      const prior = park.lab.coldStorage
+      if (prior.tempC == null) {
+        return prior
+      }
+      if (isReadingStale(prior.lastReadingAt, now, config.staleThresholdSec)) {
+        return prior
+      }
+      const tempC = nudge(prior.tempC, jitter() * 0.2, -2, 12)
       const status = deriveOperationalStatus({
         value: tempC,
         lastReadingAt: now,
@@ -118,7 +122,7 @@ export function advanceTick(park: ParkModel, config: ConfigSettings, now: number
         critAbove: 10,
       })
       readingHistory = appendHistory(readingHistory, 'lab-cold-storage', tick, { tempC })
-      return { ...park.lab.coldStorage, tempC, status, lastReadingAt: now }
+      return { ...prior, tempC, status, lastReadingAt: now }
     })(),
   }
 

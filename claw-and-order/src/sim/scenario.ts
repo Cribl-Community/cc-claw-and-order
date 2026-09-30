@@ -1,4 +1,5 @@
 import { createSeedPark, SEED_NOW } from '../data/seed'
+import { deriveOperationalStatus } from '../model/status'
 import type { ConfigSettings, ParkModel, ScenarioId } from '../model/types'
 
 const STALE_READING_AT = SEED_NOW - 600_000
@@ -16,8 +17,8 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
     item.kind === 'power' ? { ...item, status: 'critical' as const } : item,
   )
 
-  next.enclosures = next.enclosures.map((enc, index) => {
-    if (index === 0) {
+  next.enclosures = next.enclosures.map((enc) => {
+    if (enc.id === 'enc-apex-paddock') {
       return {
         ...enc,
         fenceVoltage: config.fenceVoltageMin - 900,
@@ -25,7 +26,7 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
         lastReadingAt: enc.lastReadingAt,
       }
     }
-    if (index === 1) {
+    if (enc.id === 'enc-raptor-hold') {
       return {
         ...enc,
         fenceVoltage: null,
@@ -40,11 +41,16 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
     }
   })
 
-  next.chargers = next.chargers.map((c, i) => ({ ...c, powered: i !== 2 }))
+  next.chargers = next.chargers.map((c) =>
+    c.id === 'charger-hub-c' ? { ...c, powered: false } : c,
+  )
 
-  next.safariRoutes = next.safariRoutes.map((route, i) => ({
+  next.safariRoutes = next.safariRoutes.map((route) => ({
     ...route,
-    status: i === 0 ? ('cancelled' as const) : ('delayed' as const),
+    status:
+      route.id === 'route-safari-alpha'
+        ? ('cancelled' as const)
+        : ('delayed' as const),
   }))
 
   next.attractions = next.attractions.map((a) => ({
@@ -55,12 +61,21 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
     status: a.status === 'closed' ? a.status : ('warning' as const),
   }))
 
+  const coldTempC = 9
+  const coldLastReadingAt = park.seededAt
   next.lab = {
     ...next.lab,
     coldStorage: {
-      tempC: 9,
-      status: 'warning',
-      lastReadingAt: STALE_READING_AT,
+      tempC: coldTempC,
+      status: deriveOperationalStatus({
+        value: coldTempC,
+        lastReadingAt: coldLastReadingAt,
+        now: park.seededAt,
+        staleThresholdSec: config.staleThresholdSec,
+        warnAbove: 6,
+        critAbove: 10,
+      }),
+      lastReadingAt: coldLastReadingAt,
     },
   }
 
