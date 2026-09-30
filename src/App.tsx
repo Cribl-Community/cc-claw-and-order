@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
-import { RouterProvider } from '@capra/core'
+import { RouterProvider, Toast } from '@capra/core'
 import { Route, Routes, useHref, useNavigate, type NavigateOptions } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { CompatibilityPage } from './pages/CompatibilityPage'
 import { EnclosuresPage } from './pages/EnclosuresPage'
+import { FleetPage } from './pages/FleetPage'
+import { LabPage } from './pages/LabPage'
 import { OverviewPage } from './pages/OverviewPage'
 import { ServicesPage } from './pages/ServicesPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -27,6 +29,7 @@ function CapraRouterBridge({ children }: { children: ReactNode }) {
 function App() {
   return (
     <ParkProvider>
+      <Toast.Provider />
       <CapraRouterBridge>
         <Routes>
           <Route element={<AppShell />}>
@@ -34,6 +37,8 @@ function App() {
             <Route path="enclosures" element={<EnclosuresPage />} />
             <Route path="compatibility" element={<CompatibilityPage />} />
             <Route path="services" element={<ServicesPage />} />
+            <Route path="fleet" element={<FleetPage />} />
+            <Route path="lab" element={<LabPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Routes>

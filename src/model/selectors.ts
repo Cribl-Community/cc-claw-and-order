@@ -10,6 +10,9 @@ import type {
   Species,
 } from './types'
 
+/** Park-level samples for the overview sparklines. Not an asset id. */
+export const PARK_OVERVIEW_SERIES = 'park-overview'
+
 export interface OverviewMetrics {
   criticalIncidents: number
   animalsNeedingAttention: number

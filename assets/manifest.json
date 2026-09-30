@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "background": "transparent",
+  "format": "PNG",
+  "species": {
+    "species-tyrannosaurus": {
+      "silhouette": "silhouettes/species-tyrannosaurus.png",
+      "illustration": "species/species-tyrannosaurus.png"
+    },
+    "species-velociraptor": {
+      "silhouette": "silhouettes/species-velociraptor.png",
+      "illustration": "species/species-velociraptor.png"
+    },
+    "species-triceratops": {
+      "silhouette": "silhouettes/species-triceratops.png",
+      "illustration": "species/species-triceratops.png"
+    },
+    "species-brachiosaurus": {
+      "silhouette": "silhouettes/species-brachiosaurus.png",
+      "illustration": "species/species-brachiosaurus.png"
+    },
+    "species-dilophosaurus": {
+      "silhouette": "silhouettes/species-dilophosaurus.png",
+      "illustration": "species/species-dilophosaurus.png"
+    },
+    "species-gallimimus": {
+      "silhouette": "silhouettes/species-gallimimus.png",
+      "illustration": "species/species-gallimimus.png"
+    }
+  },
+  "facilities": {
+    "vehicle": "facilities/vehicle.png",
+    "charger": "facilities/charger.png",
+    "incubator": "facilities/incubator.png",
+    "cold-storage": "facilities/cold-storage.png"
+  },
+  "emptyStates": {
+    "no-active-incidents": "empty-states/no-active-incidents.png",
+    "compatibility-unassessed": "empty-states/compatibility-unassessed.png"
+  }
+}
