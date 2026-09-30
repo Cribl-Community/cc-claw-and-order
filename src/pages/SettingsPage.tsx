@@ -159,9 +159,14 @@ export function SettingsPage() {
   }
 
   function handleCancel() {
+    if (persistPending) {
+      Toast.info(
+        'Settings already apply in memory. Save again to persist to storage; reload the app to discard.',
+      )
+      return
+    }
     setDraft(cloneConfig(config))
     setSaveError(null)
-    setPersistPending(false)
   }
 
   async function handleSave() {
