@@ -225,3 +225,10 @@ body,
   gap: token('spacing.lg');
 }
 
+.enclosures-table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: token('spacing.md');
+}
+

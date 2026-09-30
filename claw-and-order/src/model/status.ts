@@ -1,4 +1,4 @@
-import type { OperationalStatus } from './types'
+import type { ConfigSettings, Enclosure, OperationalStatus } from './types'
 
 export interface DeriveOperationalStatusInput {
   value: number | null
@@ -13,6 +13,38 @@ export interface DeriveOperationalStatusInput {
   warnAbove?: number
   /** Value strictly above this is critical. */
   critAbove?: number
+}
+
+const STATUS_RANK: Record<OperationalStatus, number> = {
+  normal: 0,
+  unknown: 1,
+  warning: 2,
+  critical: 3,
+}
+
+/** Returns the worse of two operational statuses. */
+export function worseStatus(a: OperationalStatus, b: OperationalStatus): OperationalStatus {
+  return STATUS_RANK[a] >= STATUS_RANK[b] ? a : b
+}
+
+/** Gate + fence containment health for an enclosure. */
+export function enclosureContainmentStatus(
+  enclosure: Enclosure,
+  config: ConfigSettings,
+  now: number,
+): OperationalStatus {
+  if (enclosure.gateStatus === 'fault') return 'critical'
+  if (enclosure.gateStatus === 'unknown') return 'unknown'
+  const fence = deriveOperationalStatus({
+    value: enclosure.fenceVoltage,
+    lastReadingAt: enclosure.lastReadingAt,
+    now,
+    staleThresholdSec: config.staleThresholdSec,
+    warnBelow: config.fenceVoltageMin,
+    critBelow: config.fenceVoltageMin * 0.85,
+  })
+  if (enclosure.gateStatus === 'open') return worseStatus(fence, 'warning')
+  return fence
 }
 
 export function isReadingStale(

@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react'
-import type { ConfigSettings, Enclosure, OperationalStatus, ParkModel } from '../model/types'
-import { deriveOperationalStatus } from '../model/status'
+import type { ConfigSettings, Enclosure, ParkModel } from '../model/types'
+import { enclosureContainmentStatus } from '../model/status'
 import '../styles/park-map.css'
 
 /** Simplified T-rex side profile for schematic watermark (no photography). */
@@ -11,23 +11,6 @@ const DINO_WATERMARK_PATH =
   ' -0.4 0.1-0.7 0.5-0.7 0.9v0.6c0 0.3-0.2 0.5-0.5 0.5s-0.5-0.2-0.5-0.5' +
   ' v-0.4c0-0.3-0.2-0.5-0.5-0.5s-0.5 0.2-0.5 0.5v0.3c0 0.3-0.2 0.5-0.5 0.5' +
   ' -0.2 0-0.4-0.1-0.5-0.3-0.2-0.5-0.1-1.1 0.2-1.6z'
-
-function enclosureStatus(
-  enclosure: Enclosure,
-  config: ConfigSettings,
-  now: number,
-): OperationalStatus {
-  if (enclosure.gateStatus === 'fault') return 'critical'
-  if (enclosure.gateStatus === 'unknown') return 'unknown'
-  return deriveOperationalStatus({
-    value: enclosure.fenceVoltage,
-    lastReadingAt: enclosure.lastReadingAt,
-    now,
-    staleThresholdSec: config.staleThresholdSec,
-    warnBelow: config.fenceVoltageMin,
-    critBelow: config.fenceVoltageMin * 0.85,
-  })
-}
 
 function enclosureCenter(enc: Enclosure): { x: number; y: number } {
   return {
@@ -119,7 +102,7 @@ export function ParkMap({
         )}
 
         {enclosures.map((enc) => {
-          const status = enclosureStatus(enc, config, now)
+          const status = enclosureContainmentStatus(enc, config, now)
           const c = enclosureCenter(enc)
           return (
             <g
