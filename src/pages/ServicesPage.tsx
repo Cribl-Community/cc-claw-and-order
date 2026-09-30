@@ -355,7 +355,9 @@ export function ServicesPage() {
   const selectedDepartureKeys = useMemo(() => {
     if (selection?.kind !== 'asset') return new Set<Key>()
     return new Set<Key>(
-      departureRows.filter((r) => r.vehicleId === selection.id).map((r) => r.id),
+      departureRows
+        .filter((r) => r.vehicleId === selection.id || r.routeId === selection.id)
+        .map((r) => r.id),
     )
   }, [selection, departureRows])
 
@@ -463,7 +465,7 @@ export function ServicesPage() {
           label: 'Safari',
           allowsSorting: true,
           render: (_value, item) => (
-            <NameLink label={item.routeName} onOpen={() => openAsset(item.vehicleId)} />
+            <NameLink label={item.routeName} onOpen={() => openAsset(item.routeId)} />
           ),
         },
         {

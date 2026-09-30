@@ -1,47 +1,47 @@
-# Claw & Order
+# Claw & Order Control
 
-[One-sentence summary of what this app does.]
+Claw & Order Control is a Demo Mode operations console for a simulated dinosaur park—showing how enclosure, safari, lab, and guest conditions connect in one Capra UI.
 
 This README uses fixed section names and a fixed metadata table so it can be rendered as normal Markdown today and parsed into App Gallery components later.
 
 ## Summary
 
-[App Title] is a Cribl app for [primary use case]. It helps users [outcome 1], [outcome 2], and [outcome 3].
+Claw & Order Control is a Cribl app for exploring a fictional park operations model in Demo Mode. It helps users see live-style enclosure and fence status, understand guest impact from power and weather cascades, and try assess-only compatibility planning without mutating inventory.
 
 Use this section for the short, customer-facing description that should also work in an overview card or detail page.
 
 ## What This App Does
 
-Describe the app in plain language.
+Claw & Order Control is a frontend-only demo console for the fictional park **Claw & Order**. All inventory and telemetry are simulated in the browser. Operator acknowledgments, notes, and Config settings can persist in the app-scoped Cribl KV store when the app runs inside Cribl.
 
-Suggested structure:
-* Primary purpose: [brief description]
+* Primary purpose: Demonstrate a Capra operations console that ties park infrastructure, animals, safari fleet, lab, and guest experience together under an always-on Demo Mode badge.
 * Key capabilities:
-  * [Capability 1]
-  * [Capability 2]
-  * [Capability 3]
+  * Park Overview with schematic map, KPI strip, and active incidents
+  * Enclosures & dinosaurs tables with threat vs operational-risk framing
+  * Assess-only compatibility planner using labeled fictional simulation rules
+  * Park Services for attractions, safari departures, EV fleet, chargers, feedback, and lab
+  * Settings for demo scenario, pause/tick, operator preferences, and alert thresholds
 * Intended users:
-  * [Admin / Analyst / Platform owner / Builder / Other]
+  * Builders evaluating Cribl Apps + Capra patterns
+  * Analysts and operators exploring demo workflows
+  * Platform owners reviewing Marketplace community apps
 * Works with:
-  * [Stream / Edge / Search / Lake / Cribl.Cloud / Hybrid / Other]
+  * Cribl App Platform (Stream / Edge / Search / Lake / Cribl.Cloud hosts that support Apps)
 
 ## When To Use This App
 
-List the main scenarios where this app is useful.
-
-* [Use case 1]
-* [Use case 2]
-* [Use case 3]
+* You want a polished Capra demo of multi-page ops UI with shared investigation drawer
+* You want to show storm/power cascade effects on fences, chargers, safari, and guest waits
+* You want to try compatibility assessment without applying moves to inventory
+* You want a frontend-only app that persists only operator prefs/acks/notes via KV
 
 ## Before You Install
 
-List anything a user or admin should know before installation.
-
-* Required Cribl product or deployment type: [for example Cribl.Cloud, hybrid, distributed group]
-* Required permissions or roles: [list roles or permissions]
-* Required external systems or APIs: [if any]
-* Required configuration values: [API endpoint, dataset, token source, workspace selection, and so on]
-* Known limits or prerequisites: [quota, feature flag, environment requirements]
+* Required Cribl product or deployment type: Any Cribl environment that supports Apps (Cribl.Cloud or self-managed Leader with App Platform)
+* Required permissions or roles: Ability to install/share Apps; AppUser access for app-scoped KV
+* Required external systems or APIs: None — Demo Mode uses simulated park data only
+* Required configuration values: None required at install; optional thresholds and scenario via in-app Settings
+* Known limits or prerequisites: Inventory and simulation state are in-memory and reset on reload; only KV-backed operator state survives
 
 ## Installation
 
@@ -71,196 +71,168 @@ Use this path when the app has not yet been published to the Cribl Marketplace o
 
 ## Configuration
 
-Explain exactly what a user needs to fill in when the app is first created or configured.
+No external API keys or endpoints are required. After install, open **Settings** inside the app to adjust Demo Mode behavior.
 
 | Setting | Required | Description | Example | Scope |
 |---|---|---|---|---|
-| [Setting name] | Yes/No | [What this field is for] | [Example value] | [per-user, per-app, shared] |
-| [Setting name] | Yes/No | [What this field is for] | [Example value] | [per-user, per-app, shared] |
-| [Setting name] | Yes/No | [What this field is for] | [Example value] | [per-user, per-app, shared] |
+| Scenario | No | Normal operations or storm/outage cascade overlay | `stormOutage` | per-app (KV `config/settings`) |
+| Pause simulation | No | Freeze the deterministic sim clock | On | per-app (KV) |
+| Tick interval | No | Simulation step interval in milliseconds | `2000` | per-app (KV) |
+| Default landing | No | Preferred first page after open (stored; apply on next session as implemented) | `/services` | per-app (KV) |
+| Stale threshold | No | Seconds after which readings show Unknown/Stale | `300` | per-app (KV) |
+| Fence / queue / hatch thresholds | No | Alert thresholds for fence voltage, wait times, and hatch window | Fence min `9000` V | per-app (KV) |
 
-Add guidance such as:
-* Which fields are mandatory
-* Which fields are optional
-* Safe defaults
-* What happens if a field is left blank
-* Whether settings are per-user, per-app, or shared
+* Nothing is mandatory for first open — seed Demo Mode runs immediately.
+* Safe defaults ship in the app; Save writes Config to KV when the platform KV API is available.
+* Leaving fields blank is not applicable; controls use explicit defaults.
+* Operator acknowledgments and notes are shared per app instance via KV, not per browser profile.
 
 ## How To Use
 
-Describe the happy path for a new user.
-
 ### Typical Workflow
-1. Open the app from the Apps page.
-2. Review or update the app settings.
-3. Provide the required inputs.
-4. Run the main workflow or action.
-5. Review the output, results, or generated state.
+1. Open the app from the Apps page — Demo Mode badge is always visible.
+2. Review Park Overview KPIs, map, and incidents; open any asset or incident in the investigation drawer.
+3. Switch scenario to Storm / outage in Settings (or use the demo controls) to see cascade effects; pause freezes; reset restores seed state.
+4. Use Enclosures, Compatibility (assess only), and Services for deeper tables and guest/fleet/lab views.
+5. Acknowledge incidents and save notes as needed; they persist to KV when available. Acknowledgment does not clear an active fault.
 
 ### First-Run Checklist
-* [Step 1]
-* [Step 2]
-* [Step 3]
+* Confirm Demo Mode is labeled in the header
+* Open an enclosure and an incident in the drawer
+* Toggle storm scenario and verify fences/chargers/safari degrade
+* Open Settings, change a threshold, Save (when KV is available)
+* Toggle Cribl shell light/dark and confirm Capra surfaces follow the host theme
 
 ## Permissions
 
-Document the permissions the app expects and how it behaves if a user lacks them.
-
-Include:
-* Required permissions for core functionality
-* Optional permissions for enhanced features
-* Any APIs or resources the app reads or writes
-* What users should expect if access is denied
+* Core functionality needs App install/share and the automatic AppUser grants for app-scoped KV (`/a/{appId}/kvstore/*`).
+* No Cribl product API paths are declared in `config/policies.yml` — the app does not call Stream/Edge/Search config APIs.
+* No external proxy domains are required (`config/proxies.yml` is empty by design).
+* If KV is unavailable (for example local Vite without platform globals), the sim still runs; Save/ack/note persistence surfaces an error and in-memory behavior continues where applicable.
 
 ### Cribl API Endpoints Used
 
-List every Cribl API endpoint the app uses. Add one row per endpoint.
-
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/v1/...` | [What the call does and why the app needs it] |
-| POST | `/api/v1/...` | [What the call does and why the app needs it] |
-| PUT | `/api/v1/...` | [What the call does and why the app needs it] |
+| GET | `/api/v1/a/{appId}/kvstore/config/settings` | Load saved scenario, pause, and threshold settings |
+| PUT | `/api/v1/a/{appId}/kvstore/config/settings` | Persist Settings when the operator saves |
+| GET | `/api/v1/a/{appId}/kvstore/operator/acks` | Load incident acknowledgments |
+| PUT | `/api/v1/a/{appId}/kvstore/operator/acks` | Save incident acknowledgments |
+| GET | `/api/v1/a/{appId}/kvstore/operator/notes` | Load operator notes |
+| PUT | `/api/v1/a/{appId}/kvstore/operator/notes` | Save operator notes |
 
-Suggested text:
-This app should handle permission differences gracefully where possible. If a user lacks access to an optional API or resource, the app should continue to function for supported workflows and show a helpful message instead of failing completely.
+This app should handle permission differences gracefully where possible. If a user lacks access to KV, Demo Mode simulation and UI remain usable; persistence actions show a helpful failure instead of failing the whole app.
 
 ## External API Access
 
-If applicable, describe any bundled defaults or external access patterns.
-
 ### Default Configuration
-* `default/proxies.yml` — [what it contains]
-* `default/policies.yml` — [what it contains]
-* Any other shipped config — [description]
+* `config/proxies.yml` — empty; no external domains declared
+* `config/policies.yml` — empty policy list; no Cribl product API grants required beyond automatic app KV
+* Frontend-only — no `backend.yml` / scheduled functions
 
 ### External Endpoints
-* [Service name] — [purpose]
-* [Service name] — [purpose]
-
-If the app makes no external calls, say so clearly.
+* None — the app makes no external API calls. Park data is entirely simulated.
 
 ## Data And Storage
 
-Explain what the app stores or changes.
-
-Example topics:
-* KV keys used by the app
-* Whether data is persisted
-* Whether data is shared across users
-* Cleanup behavior on uninstall, if known
-* Any quotas or limits that affect usage
+* KV keys: `config/settings`, `operator/acks`, `operator/notes`
+* Park inventory, telemetry, incidents, and reading history live in memory and reset on reload or explicit sim reset
+* KV data is app-scoped and shared across users of that installed app instance
+* Uninstall removes the app package; platform KV cleanup follows Cribl Apps uninstall behavior
+* No browser `localStorage` / `sessionStorage` is used for app data
 
 ## Support
 
-Choose one support model and remove the others.
-
-Also tell users exactly how to reach the developer or maintainer for this app. Include a clear support path such as an email address, Slack channel, GitHub issues page, support alias, or team name.
-
-### Cribl Built
-This app is built by Cribl and supported by Cribl. Issues, bugs, and questions should follow standard Cribl support channels. Also include the owning team and the best contact path for the app maintainer.
-
-### Partner Built
-This app is built by [Partner Name]. The partner owns support, maintenance, and feature requests for this app. Cribl does not provide direct support for app-specific behavior unless explicitly stated. Also include the partner support contact and the best developer or maintainer contact path.
-
 ### Community Built
-This app is provided as a community contribution. It may be useful for learning, experimentation, or shared workflows, but it does not carry an official support commitment from Cribl. Maintenance and updates depend on the community maintainer. Also include how users can reach the maintainer or contributor.
+This app is provided as a community contribution by John Owen. It is useful for demos, learning Capra Apps patterns, and shared workflows, but it does not carry an official support commitment from Cribl. Maintenance and updates depend on the community maintainer.
 
-### Internal Only
-This app is intended for internal use, experiments, demos, or proof-of-concept workflows. It should not be treated as a generally supported production app unless its support model changes. Also include the internal owner and how to contact the developer or team responsible for the app.
+Contact: open an issue on the [GitHub repository](https://github.com/Cribl-Community/claw-and-order) or email the author listed in `package.json` (`jowendtd@gmail.com`).
 
 ## Known Limitations
 
-Use this section to set expectations.
-
-* [Limitation 1]
-* [Limitation 2]
-* [Limitation 3]
+* Demo Mode only — not a production park SCADA or real telemetry integration
+* Simulation state does not survive reload; only KV-backed settings/acks/notes persist
+* Compatibility planner is assess-only; it does not move dinosaurs or rewrite inventory
+* Local `npm run dev` without Cribl platform globals cannot persist to KV
+* Light/dark theme follows the Cribl shell; full host-theme verification requires an installed Cribl Apps session
 
 ## Troubleshooting
 
 ### The App Opens But Some Features Do Not Work
 Possible causes:
-* Missing permissions
-* Missing required settings
-* External dependency unavailable
-* Unsupported environment
+* Missing AppUser / share permissions for KV
+* Running outside Cribl where `CRIBL_API_URL` is unavailable
+* Unsupported or older App Platform host
 
 ### The App Cannot Connect To An API Or Service
 Check:
-* App settings
-* Network or proxy configuration
-* Credentials or tokens
-* Allowed endpoints
+* This app has no external services — if Save/ack fails, confirm platform KV and AppUser grants
+* Network or proxy misconfiguration should not apply unless the host itself cannot reach its own API
 
 ### The App Works Locally But Not In Cribl
 Check:
-* Packaging and deployment version
-* Runtime configuration
-* Required platform globals or APIs
-* Environment-specific permissions
+* Packaged `.tgz` version matches the release you installed
+* App was shared with the signed-in user
+* Theme and navigation sync require the Cribl shell host messages
 
 ## Development
-
-If this repository is also intended for builders, include a short developer section.
 
 ```bash
 npm install
 npm run dev
+npm test
+npm run lint
+npm run build
 npm run package
 ```
 
-Document:
-* How to run locally
-* Any important environment differences
-* How to package and test the app
-* Where the main source files live
-
-If your app has backend endpoints (`config/backend.yml` + `backend/`), `npm run build` runs `apps build` to bundle each endpoint into one self-contained file before packaging. Backend endpoint permissions are not declared in `backend.yml`; they use `config/policies.yml` (Cribl API) and `config/proxies.yml` (external egress), app-wide. See `AGENTS.md` for the endpoint contract.
+* Local preview: `npm run dev` (Vite). Platform globals and KV behave differently than installed mode.
+* Package for install: `npm run package` (increments version by default).
+* Main source: `src/` (pages, model, sim, components). Brand assets under `assets/` and `src/assets/`.
+* Frontend-only: no backend endpoints; `apps build` is a no-op without a backend manifest.
 
 ## Project Layout
 
 ```text
 src/
   App.tsx
-  [other files]
-backend/
-  [ESM endpoint handlers — bundled by `apps build`; omit for a frontend-only app]
+  main.tsx
+  components/     # shell, drawer, map, shared UI
+  pages/          # Overview, Enclosures, Compatibility, Services, Settings
+  model/          # types, selectors, status helpers
+  sim/            # clock, tick, scenario overlay
+  state/          # ParkProvider context
+  kv/             # KV client + key constants
+  compatibility/  # assess-only engine
+  styles/         # brand and page CSS
+assets/
+  claw_and_order_logo.png
+  Claw-and-Order-Brand-Guide.pdf
 config/
-  backend.yml    [backend endpoint declarations]
-  policies.yml   [Cribl API access grants]
-  proxies.yml    [external domain declarations]
-  schedules.yml  [scheduled backend function declarations]
-  [other config files]
-default/
-  [packaged default config files]
-store/
-  README.md
-LICENSE
+  policies.yml
+  proxies.yml
+public/
+  favicon.svg
 README.md
 ```
 
 ## Versioning And Releases
 
-Explain how versions are managed and how users should consume releases.
-
-* Follow semantic versioning
-* Use tagged releases for reproducible installs
-* Document upgrade notes when configuration or behavior changes
+* Follow semantic versioning in `package.json`
+* `npm run package` increments the patch version by default (`--minor` / `--major` / `--version` supported)
+* Prefer tagged GitHub Releases with the packaged `.tgz` for reproducible installs
+* Document Settings or Demo Mode behavior changes in release notes when they affect operators
 
 ## Contributing
 
-If contributions are allowed, add:
-* How to open issues
-* How to propose changes
-* Review expectations
-* Any coding or content standards
+* Open issues for bugs or demo-content gaps
+* Propose changes via pull request against the working branch
+* Keep Capra page templates and Demo Mode labeling intact
+* Do not introduce external API dependencies without updating `config/proxies.yml` and this README
 
 ## License
 
-This app is licensed under the terms in [LICENSE](./LICENSE).
-
-If needed, add one sentence clarifying any third-party dependencies or additional notices.
+This app is licensed under the terms in the repository (see package metadata and any LICENSE file when published). Third-party UI libraries (`@capra/*`, React) retain their own licenses.
 
 ## App Metadata
 
@@ -268,20 +240,20 @@ Use this table as the canonical source for gallery fields. Keep the left column 
 
 | Field | Value |
 |---|---|
-| App Name | [App Title] |
-| App ID | [app-id] |
-| Version | [x.y.z] |
-| Author | [Cribl, Partner Name, Community, or Internal Team] |
-| Support Model | [cribl-built, partner-built, community-built, internal-only] |
-| Support Label | [Cribl Built, Partner Built, Community Built, Internal Only] |
-| Support Contact | [support channel, email, or URL] |
-| License | [SPDX identifier or "See LICENSE"] |
+| App Name | Claw & Order Control |
+| App ID | claw-and-order |
+| Version | 1.0.0 |
+| Author | John Owen |
+| Support Model | community-built |
+| Support Label | Community Built |
+| Support Contact | https://github.com/Cribl-Community/claw-and-order/issues |
+| License | See LICENSE |
 | License File | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt) |
-| Product Tags | [stream, edge, search, lake, insights] |
-| Category | [primary category] |
-| Audience | [admin, analyst, platform-owner, builder, end-user] |
-| Availability | [preview, ga, internal, deprecated] |
-| Requires External Access | [yes or no] |
-| Repository | [repository URL if applicable] |
-| Documentation | [docs URL if applicable] |
-| README Schema Version | [1.0] |
+| Product Tags | stream, edge, search, lake |
+| Category | Demo / Operations |
+| Audience | builder, analyst, platform-owner |
+| Availability | preview |
+| Requires External Access | no |
+| Repository | https://github.com/Cribl-Community/claw-and-order |
+| Documentation | https://github.com/Cribl-Community/claw-and-order#readme |
+| README Schema Version | 1.0 |

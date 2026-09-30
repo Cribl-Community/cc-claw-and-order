@@ -3,9 +3,11 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { deriveOperationalStatus, isReadingStale } from '../model/status'
 import type {
   Attraction,
+  Charger,
   Dinosaur,
   Enclosure,
   Incident,
+  Incubator,
   Infrastructure,
   OperationalStatus,
   ParkModel,
@@ -22,6 +24,9 @@ type Resolved =
   | { type: 'vehicle'; entity: Vehicle }
   | { type: 'infrastructure'; entity: Infrastructure }
   | { type: 'attraction'; entity: Attraction }
+  | { type: 'charger'; entity: Charger }
+  | { type: 'incubator'; entity: Incubator }
+  | { type: 'safariRoute'; entity: SafariRoute }
   | { type: 'incident'; entity: Incident }
   | { type: 'unknown'; id: string }
 
@@ -55,7 +60,54 @@ function resolveEntity(park: ParkModel, selection: NonNullable<Selection>): Reso
   const attraction = park.attractions.find((a) => a.id === id)
   if (attraction) return { type: 'attraction', entity: attraction }
 
+  const charger = park.chargers.find((c) => c.id === id)
+  if (charger) return { type: 'charger', entity: charger }
+
+  const incubator = park.lab.incubators.find((i) => i.id === id)
+  if (incubator) return { type: 'incubator', entity: incubator }
+
+  const safariRoute = park.safariRoutes.find((r) => r.id === id)
+  if (safariRoute) return { type: 'safariRoute', entity: safariRoute }
+
   return { type: 'unknown', id }
+}
+
+function chargerOperationalStatus(
+  charger: Charger,
+  now: number,
+  staleThresholdSec: number,
+): OperationalStatus {
+  if (isReadingStale(charger.lastReadingAt, now, staleThresholdSec)) return 'unknown'
+  if (!charger.powered) return 'critical'
+  if (!charger.available) return 'warning'
+  return 'normal'
+}
+
+function safariRouteOperationalStatus(status: SafariRoute['status']): OperationalStatus {
+  switch (status) {
+    case 'running':
+      return 'normal'
+    case 'delayed':
+      return 'warning'
+    case 'cancelled':
+      return 'critical'
+    default:
+      return 'unknown'
+  }
+}
+
+function assetLabel(park: ParkModel, assetId: string): string {
+  return (
+    park.enclosures.find((e) => e.id === assetId)?.name ??
+    park.dinosaurs.find((d) => d.id === assetId)?.name ??
+    park.vehicles.find((v) => v.id === assetId)?.id ??
+    park.infrastructure.find((i) => i.id === assetId)?.name ??
+    park.attractions.find((a) => a.id === assetId)?.name ??
+    park.chargers.find((c) => c.id === assetId)?.id ??
+    park.lab.incubators.find((i) => i.id === assetId)?.id ??
+    park.safariRoutes.find((r) => r.id === assetId)?.name ??
+    assetId
+  )
 }
 
 function formatWhen(ts: number | null | undefined): string {
@@ -209,6 +261,12 @@ export function InvestigationDrawer() {
         return resolved.entity.name
       case 'attraction':
         return resolved.entity.name
+      case 'charger':
+        return resolved.entity.id
+      case 'incubator':
+        return resolved.entity.id
+      case 'safariRoute':
+        return resolved.entity.name
       case 'incident':
         return resolved.entity.title
       case 'unknown':
@@ -229,12 +287,20 @@ export function InvestigationDrawer() {
         return `Infrastructure · ${resolved.entity.kind} · ${resolved.entity.id}`
       case 'attraction':
         return `Attraction · ${resolved.entity.zone} · ${resolved.entity.id}`
+      case 'charger':
+        return `Charger · ${resolved.entity.id}`
+      case 'incubator': {
+        const species = park.species.find((s) => s.id === resolved.entity.speciesId)
+        return `Incubator · ${species?.displayName ?? resolved.entity.speciesId}`
+      }
+      case 'safariRoute':
+        return `Safari route · ${resolved.entity.id}`
       case 'incident':
         return `Incident · ${resolved.entity.id}`
       case 'unknown':
         return 'Unknown asset'
     }
-  }, [resolved])
+  }, [resolved, park.species])
 
   const freshness = useMemo(() => {
     if (!resolved) return null
@@ -246,6 +312,9 @@ export function InvestigationDrawer() {
       case 'infrastructure':
         lastReadingAt = resolved.entity.lastReadingAt
         break
+      case 'charger':
+        lastReadingAt = resolved.entity.lastReadingAt
+        break
       case 'dinosaur': {
         const enc = park.enclosures.find((e) => e.id === resolved.entity.enclosureId)
         lastReadingAt = enc?.lastReadingAt
@@ -255,7 +324,13 @@ export function InvestigationDrawer() {
         lastReadingAt = undefined
     }
 
-    if (lastReadingAt == null && resolved.type !== 'enclosure' && resolved.type !== 'infrastructure' && resolved.type !== 'dinosaur') {
+    if (
+      lastReadingAt == null &&
+      resolved.type !== 'enclosure' &&
+      resolved.type !== 'infrastructure' &&
+      resolved.type !== 'dinosaur' &&
+      resolved.type !== 'charger'
+    ) {
       return null
     }
 
@@ -288,6 +363,14 @@ export function InvestigationDrawer() {
         return resolved.entity.status
       case 'attraction':
         return resolved.entity.status === 'closed' ? 'critical' : resolved.entity.status
+      case 'charger':
+        return chargerOperationalStatus(resolved.entity, now, config.staleThresholdSec)
+      case 'incubator': {
+        if (resolved.entity.tempC == null || resolved.entity.humidityPct == null) return 'unknown'
+        return resolved.entity.status
+      }
+      case 'safariRoute':
+        return safariRouteOperationalStatus(resolved.entity.status)
       case 'incident':
         return severityStatus(resolved.entity.severity)
       default:
@@ -420,6 +503,100 @@ export function InvestigationDrawer() {
         },
       ]
     }
+    if (resolved.type === 'charger') {
+      const c = resolved.entity
+      const status = chargerOperationalStatus(c, now, config.staleThresholdSec)
+      return [
+        {
+          key: 'powered',
+          label: 'Powered',
+          value: c.powered ? 'Yes' : 'No',
+          status: c.powered ? 'normal' : 'critical',
+        },
+        {
+          key: 'available',
+          label: 'Available',
+          value: c.available ? 'Yes' : 'No',
+          status,
+        },
+      ]
+    }
+    if (resolved.type === 'incubator') {
+      const inc = resolved.entity
+      const species = park.species.find((s) => s.id === inc.speciesId)
+      const daysToHatch = (inc.expectedHatchAt - now) / (24 * 60 * 60 * 1000)
+      let status: OperationalStatus = inc.status
+      if (inc.tempC == null || inc.humidityPct == null) {
+        status = 'unknown'
+      } else if (daysToHatch >= 0 && daysToHatch <= config.hatchAlertDays && status === 'normal') {
+        status = 'warning'
+      }
+      return [
+        {
+          key: 'species',
+          label: 'Species',
+          value: species?.displayName ?? inc.speciesId,
+        },
+        {
+          key: 'expectedHatchAt',
+          label: 'Expected hatch',
+          value: formatWhen(inc.expectedHatchAt),
+          threshold: `hatch alert ≤ ${config.hatchAlertDays} days`,
+          status,
+        },
+        {
+          key: 'tempC',
+          label: 'Temperature',
+          value: formatNumber(inc.tempC, '°C'),
+          status: deriveOperationalStatus({
+            value: inc.tempC,
+            lastReadingAt: now,
+            now,
+            staleThresholdSec: config.staleThresholdSec,
+          }),
+        },
+        {
+          key: 'humidityPct',
+          label: 'Humidity',
+          value: formatNumber(inc.humidityPct, '%'),
+          status: deriveOperationalStatus({
+            value: inc.humidityPct,
+            lastReadingAt: now,
+            now,
+            staleThresholdSec: config.staleThresholdSec,
+          }),
+        },
+      ]
+    }
+    if (resolved.type === 'safariRoute') {
+      const route = resolved.entity
+      const next = route.departures
+        .slice()
+        .sort((a, b) => a.departsAt - b.departsAt)
+        .slice(0, 3)
+      const rows: ReadingRow[] = [
+        {
+          key: 'status',
+          label: 'Route status',
+          value: route.status,
+          status: safariRouteOperationalStatus(route.status),
+        },
+        {
+          key: 'stops',
+          label: 'Stops',
+          value: String(route.stopEnclosureIds.length),
+        },
+      ]
+      next.forEach((dep, i) => {
+        const utilPct = dep.seats === 0 ? 0 : Math.round((dep.occupied / dep.seats) * 100)
+        rows.push({
+          key: `dep-${dep.id}`,
+          label: i === 0 ? 'Next departure' : `Departure ${i + 1}`,
+          value: `${formatWhen(dep.departsAt)} · ${dep.vehicleId} · ${dep.occupied}/${dep.seats} (${utilPct}%)`,
+        })
+      })
+      return rows
+    }
     return []
   }, [resolved, park.species, park.enclosures, now, config])
 
@@ -442,11 +619,9 @@ export function InvestigationDrawer() {
     }
     if (resolved.type === 'infrastructure') {
       for (const supportId of resolved.entity.supports) {
-        const enc = park.enclosures.find((e) => e.id === supportId)
-        const attr = park.attractions.find((a) => a.id === supportId)
         links.push({
           id: supportId,
-          label: enc?.name ?? attr?.name ?? supportId,
+          label: assetLabel(park, supportId),
           kind: 'asset',
         })
       }
@@ -457,16 +632,41 @@ export function InvestigationDrawer() {
         links.push({ id: encId, label: enc?.name ?? encId, kind: 'asset' })
       }
     }
+    if (resolved.type === 'charger') {
+      for (const v of park.vehicles.filter((x) => x.chargerId === resolved.entity.id)) {
+        links.push({ id: v.id, label: v.id, kind: 'asset' })
+      }
+      for (const infra of park.infrastructure.filter((i) => i.supports.includes(resolved.entity.id))) {
+        links.push({ id: infra.id, label: infra.name, kind: 'asset' })
+      }
+    }
+    if (resolved.type === 'incubator') {
+      // Lab incubators have no direct enclosure/infra edges in the seed model.
+    }
+    if (resolved.type === 'safariRoute') {
+      for (const encId of resolved.entity.stopEnclosureIds) {
+        const enc = park.enclosures.find((e) => e.id === encId)
+        links.push({ id: encId, label: enc?.name ?? encId, kind: 'asset' })
+      }
+      for (const v of park.vehicles.filter((x) => x.routeId === resolved.entity.id)) {
+        links.push({ id: v.id, label: v.id, kind: 'asset' })
+      }
+      for (const dep of resolved.entity.departures) {
+        if (!links.some((l) => l.id === dep.vehicleId)) {
+          links.push({ id: dep.vehicleId, label: dep.vehicleId, kind: 'asset' })
+        }
+      }
+    }
+    if (resolved.type === 'vehicle') {
+      const route = park.safariRoutes.find((r) => r.id === resolved.entity.routeId)
+      if (route) links.push({ id: route.id, label: route.name, kind: 'asset' })
+      if (resolved.entity.chargerId) {
+        links.push({ id: resolved.entity.chargerId, label: resolved.entity.chargerId, kind: 'asset' })
+      }
+    }
     if (resolved.type === 'incident') {
       for (const assetId of resolved.entity.assetIds) {
-        const name =
-          park.enclosures.find((e) => e.id === assetId)?.name ??
-          park.dinosaurs.find((d) => d.id === assetId)?.name ??
-          park.vehicles.find((v) => v.id === assetId)?.id ??
-          park.infrastructure.find((i) => i.id === assetId)?.name ??
-          park.attractions.find((a) => a.id === assetId)?.name ??
-          assetId
-        links.push({ id: assetId, label: name, kind: 'asset' })
+        links.push({ id: assetId, label: assetLabel(park, assetId), kind: 'asset' })
       }
     }
     return links
