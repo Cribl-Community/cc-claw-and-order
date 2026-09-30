@@ -1,4 +1,4 @@
-import { Pill, Text } from '@capra/core'
+import { Text } from '@capra/core'
 import {
   AlertOutlined,
   CircleCheck,
@@ -8,16 +8,11 @@ import {
 } from '@capra/icons'
 import type { OperationalStatus } from '../model/types'
 
-type PillAppearance = 'default' | 'info' | 'danger' | 'warning' | 'success' | 'highlight'
-
-const STATUS_META: Record<
-  OperationalStatus,
-  { label: string; appearance: PillAppearance; Icon: SvgIcon }
-> = {
-  normal: { label: 'Normal', appearance: 'success', Icon: CircleCheck },
-  warning: { label: 'Warning', appearance: 'warning', Icon: WarningOutlined },
-  critical: { label: 'Critical', appearance: 'danger', Icon: AlertOutlined },
-  unknown: { label: 'Unknown', appearance: 'default', Icon: CircleQuestion },
+const STATUS_META: Record<OperationalStatus, { label: string; Icon: SvgIcon }> = {
+  normal: { label: 'Normal', Icon: CircleCheck },
+  warning: { label: 'Warning', Icon: WarningOutlined },
+  critical: { label: 'Critical', Icon: AlertOutlined },
+  unknown: { label: 'Unknown', Icon: CircleQuestion },
 }
 
 export function StatusIndicator({
@@ -36,14 +31,17 @@ export function StatusIndicator({
   const text = label ?? meta.label
 
   return (
-    <span className={compact ? 'status-indicator status-indicator--compact' : 'status-indicator'}>
+    <span
+      className={[
+        'status-indicator',
+        `status-indicator--${status}`,
+        compact ? 'status-indicator--compact' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <Icon size="sm" aria-hidden />
       <Text variant="body-sm-normal">{text}</Text>
-      {compact ? null : (
-        <Pill appearance={meta.appearance} variant="muted" inline>
-          {meta.label}
-        </Pill>
-      )}
     </span>
   )
 }

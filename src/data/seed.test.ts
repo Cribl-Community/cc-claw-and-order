@@ -13,6 +13,8 @@ describe('createSeedPark', () => {
     expect(park.attractions.length).toBe(3)
     expect(park.safariRoutes.length).toBe(2)
     expect(park.vehicles.length).toBe(6)
+    expect(park.lab.incubators.length).toBe(4)
+    expect(park.lab.machines.length).toBe(3)
     for (const d of park.dinosaurs) {
       expect(park.enclosures.some((e) => e.id === d.enclosureId)).toBe(true)
       expect(park.species.some((s) => s.id === d.speciesId)).toBe(true)

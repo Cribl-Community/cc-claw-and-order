@@ -37,6 +37,9 @@ describe('advanceTick', () => {
     expect(next.tick).toBe(park.tick + 1)
     const encId = park.enclosures[0]!.id
     expect(next.readingHistory[encId]?.length).toBe(1)
+    expect(next.readingHistory['park-overview']?.length).toBe(
+      (park.readingHistory['park-overview']?.length ?? 0) + 1,
+    )
   })
 
   it('caps reading history at 20 samples per asset', () => {

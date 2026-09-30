@@ -17,20 +17,24 @@ export function anchorParkClock(park: ParkModel, now: number): ParkModel {
       ...charger,
       lastReadingAt: shift(charger.lastReadingAt),
     })),
+    vehicles: park.vehicles.map((vehicle) => ({
+      ...vehicle,
+      lastReadingAt: shift(vehicle.lastReadingAt),
+    })),
     infrastructure: park.infrastructure.map((item) => ({
       ...item,
       lastReadingAt: shift(item.lastReadingAt),
     })),
     lab: {
-      ...park.lab,
       incubators: park.lab.incubators.map((incubator) => ({
         ...incubator,
         expectedHatchAt: shift(incubator.expectedHatchAt),
+        lastReadingAt: shift(incubator.lastReadingAt),
       })),
-      coldStorage: {
-        ...park.lab.coldStorage,
-        lastReadingAt: shift(park.lab.coldStorage.lastReadingAt),
-      },
+      machines: park.lab.machines.map((machine) => ({
+        ...machine,
+        lastReadingAt: shift(machine.lastReadingAt),
+      })),
     },
     incidents: park.incidents.map((incident) => ({
       ...incident,

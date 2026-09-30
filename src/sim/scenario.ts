@@ -1,5 +1,4 @@
 import { createSeedPark } from '../data/seed'
-import { deriveOperationalStatus } from '../model/status'
 import type { ConfigSettings, ParkModel, ScenarioId } from '../model/types'
 
 const STALE_OFFSET_MS = 600_000
@@ -61,22 +60,13 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
     status: a.status === 'closed' ? a.status : ('warning' as const),
   }))
 
-  const coldTempC = 9
-  const coldLastReadingAt = park.seededAt
   next.lab = {
     ...next.lab,
-    coldStorage: {
-      tempC: coldTempC,
-      status: deriveOperationalStatus({
-        value: coldTempC,
-        lastReadingAt: coldLastReadingAt,
-        now: park.seededAt,
-        staleThresholdSec: config.staleThresholdSec,
-        warnAbove: 6,
-        critAbove: 10,
-      }),
-      lastReadingAt: coldLastReadingAt,
-    },
+    machines: next.lab.machines.map((machine) => ({
+      ...machine,
+      powered: false,
+      lastReadingAt: park.seededAt,
+    })),
   }
 
   next.guestsInPark = Math.round(next.guestsInPark * 1.05)
@@ -126,7 +116,10 @@ function applyStormOutage(park: ParkModel, config: ConfigSettings): ParkModel {
   ]
 
   next.incidents = [
-    ...next.incidents.map((inc) => ({ ...inc, active: inc.severity === 'warning' ? true : inc.active })),
+    ...next.incidents.map((inc) => ({
+      ...inc,
+      active: inc.severity === 'warning' ? true : inc.active,
+    })),
     ...stormIncidents,
   ]
 
@@ -145,7 +138,11 @@ function applyNormal(park: ParkModel): ParkModel {
   }
 }
 
-export function applyScenario(park: ParkModel, scenario: ScenarioId, config: ConfigSettings): ParkModel {
+export function applyScenario(
+  park: ParkModel,
+  scenario: ScenarioId,
+  config: ConfigSettings,
+): ParkModel {
   if (scenario === 'stormOutage') {
     return applyStormOutage(park, config)
   }

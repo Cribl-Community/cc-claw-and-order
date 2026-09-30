@@ -1,8 +1,10 @@
 import { VerticalNavigation } from '@capra/core'
 import {
   Book,
+  Car,
   Cog,
   CodeMerge,
+  Flask,
   HomeOutlined,
   MappingOutlined,
   Routes as RoutesIcon,
@@ -15,6 +17,8 @@ const NAV_ITEMS = [
   { href: '/enclosures', label: 'Enclosures', icon: <MappingOutlined /> },
   { href: '/compatibility', label: 'Compatibility', icon: <CodeMerge /> },
   { href: '/services', label: 'Services', icon: <RoutesIcon /> },
+  { href: '/fleet', label: 'Fleet', icon: <Car /> },
+  { href: '/lab', label: 'Lab', icon: <Flask /> },
 ] as const
 
 function pathIsActive(pathname: string, href: string): boolean {

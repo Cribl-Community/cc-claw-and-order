@@ -37,12 +37,13 @@ export interface ParkContextValue {
   updateConfig(
     partial: Partial<ConfigSettings>,
     opts?: { persist?: boolean },
-  ): Promise<void>
-  saveConfig(): Promise<void>
+  ): Promise<{ ok: boolean; error?: string }>
+  saveConfig(): Promise<{ ok: boolean; error?: string }>
   pause(): void
   resume(): void
   setScenario(id: ScenarioId): void
   resetSimulation(opts?: { clearOperator?: boolean }): Promise<void>
+  clearOperatorState(): Promise<{ ok: boolean; error?: string }>
 }
 
 export const ParkContext = createContext<ParkContextValue | null>(null)
@@ -114,7 +115,10 @@ export function ParkProvider({ children }: { children: ReactNode }) {
             scenario: nextConfig.scenario,
             paused: nextConfig.paused,
           }
-          return applyScenario(withFlags, nextConfig.scenario, nextConfig)
+          return anchorParkClock(
+            applyScenario(withFlags, nextConfig.scenario, nextConfig),
+            Date.now(),
+          )
         })
         setKvStatus({ settingsLoaded: true })
       } catch (e) {
@@ -184,7 +188,7 @@ export function ParkProvider({ children }: { children: ReactNode }) {
       if (partial.scenario !== undefined) {
         const scenario = partial.scenario
         setPark((p) =>
-          applyScenario({ ...p, scenario }, scenario, next),
+          anchorParkClock(applyScenario({ ...p, scenario }, scenario, next), Date.now()),
         )
       }
       if (partial.paused !== undefined) {
@@ -194,7 +198,9 @@ export function ParkProvider({ children }: { children: ReactNode }) {
       if (opts?.persist) {
         const result = await kvPut(KV_KEYS.settings, next)
         reportKvError(result.error)
+        return result
       }
+      return { ok: true }
     },
     [reportKvError],
   )
@@ -202,6 +208,7 @@ export function ParkProvider({ children }: { children: ReactNode }) {
   const saveConfig = useCallback(async () => {
     const result = await kvPut(KV_KEYS.settings, configRef.current)
     reportKvError(result.error)
+    return result
   }, [reportKvError])
 
   const pause = useCallback(() => {
@@ -226,7 +233,9 @@ export function ParkProvider({ children }: { children: ReactNode }) {
     const next = { ...configRef.current, scenario: id }
     configRef.current = next
     setConfig(next)
-    setPark((p) => applyScenario({ ...p, scenario: id }, id, next))
+    setPark((p) =>
+      anchorParkClock(applyScenario({ ...p, scenario: id }, id, next), Date.now()),
+    )
   }, [])
 
   const resetSimulation = useCallback(
@@ -262,6 +271,20 @@ export function ParkProvider({ children }: { children: ReactNode }) {
     [reportKvError],
   )
 
+  const clearOperatorState = useCallback(async () => {
+    const [acksRes, notesRes] = await Promise.all([
+      kvPut(KV_KEYS.acks, {}),
+      kvPut(KV_KEYS.notes, {}),
+    ])
+    const error = acksRes.error ?? notesRes.error
+    if (error) {
+      reportKvError(error)
+      return { ok: false as const, error }
+    }
+    setOperator(EMPTY_OPERATOR)
+    return { ok: true as const }
+  }, [reportKvError])
+
   const value = useMemo<ParkContextValue>(
     () => ({
       park,
@@ -278,6 +301,7 @@ export function ParkProvider({ children }: { children: ReactNode }) {
       resume,
       setScenario,
       resetSimulation,
+      clearOperatorState,
     }),
     [
       park,
@@ -293,6 +317,7 @@ export function ParkProvider({ children }: { children: ReactNode }) {
       resume,
       setScenario,
       resetSimulation,
+      clearOperatorState,
     ],
   )
 

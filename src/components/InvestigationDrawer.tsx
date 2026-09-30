@@ -1,12 +1,18 @@
-import { Button, Divider, Drawer, Link, Text, TextArea } from '@capra/core'
+import { Button, Divider, Drawer, Text, TextArea } from '@capra/core'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { facilityArt, speciesIllustration, speciesSilhouette } from '../assets/art'
+import { FLEET_BATTERY_MIN_PCT } from '../model/fleet'
+import { incubatorOperationalStatus, machineOperationalStatus } from '../model/lab'
 import { deriveOperationalStatus, isReadingStale } from '../model/status'
 import type {
   Attraction,
+  Charger,
   Dinosaur,
   Enclosure,
   Incident,
+  Incubator,
   Infrastructure,
+  LabMachine,
   OperationalStatus,
   ParkModel,
   SafariRoute,
@@ -22,6 +28,10 @@ type Resolved =
   | { type: 'vehicle'; entity: Vehicle }
   | { type: 'infrastructure'; entity: Infrastructure }
   | { type: 'attraction'; entity: Attraction }
+  | { type: 'charger'; entity: Charger }
+  | { type: 'incubator'; entity: Incubator }
+  | { type: 'labMachine'; entity: LabMachine }
+  | { type: 'safariRoute'; entity: SafariRoute }
   | { type: 'incident'; entity: Incident }
   | { type: 'unknown'; id: string }
 
@@ -55,7 +65,58 @@ function resolveEntity(park: ParkModel, selection: NonNullable<Selection>): Reso
   const attraction = park.attractions.find((a) => a.id === id)
   if (attraction) return { type: 'attraction', entity: attraction }
 
+  const charger = park.chargers.find((c) => c.id === id)
+  if (charger) return { type: 'charger', entity: charger }
+
+  const incubator = park.lab.incubators.find((i) => i.id === id)
+  if (incubator) return { type: 'incubator', entity: incubator }
+
+  const labMachine = park.lab.machines.find((m) => m.id === id)
+  if (labMachine) return { type: 'labMachine', entity: labMachine }
+
+  const safariRoute = park.safariRoutes.find((r) => r.id === id)
+  if (safariRoute) return { type: 'safariRoute', entity: safariRoute }
+
   return { type: 'unknown', id }
+}
+
+function chargerOperationalStatus(
+  charger: Charger,
+  now: number,
+  staleThresholdSec: number,
+): OperationalStatus {
+  if (isReadingStale(charger.lastReadingAt, now, staleThresholdSec)) return 'unknown'
+  if (!charger.powered) return 'critical'
+  if (!charger.available) return 'warning'
+  return 'normal'
+}
+
+function safariRouteOperationalStatus(status: SafariRoute['status']): OperationalStatus {
+  switch (status) {
+    case 'running':
+      return 'normal'
+    case 'delayed':
+      return 'warning'
+    case 'cancelled':
+      return 'critical'
+    default:
+      return 'unknown'
+  }
+}
+
+function assetLabel(park: ParkModel, assetId: string): string {
+  return (
+    park.enclosures.find((e) => e.id === assetId)?.name ??
+    park.dinosaurs.find((d) => d.id === assetId)?.name ??
+    park.vehicles.find((v) => v.id === assetId)?.id ??
+    park.infrastructure.find((i) => i.id === assetId)?.name ??
+    park.attractions.find((a) => a.id === assetId)?.name ??
+    park.chargers.find((c) => c.id === assetId)?.id ??
+    park.lab.incubators.find((i) => i.id === assetId)?.name ??
+    park.lab.machines.find((m) => m.id === assetId)?.name ??
+    park.safariRoutes.find((r) => r.id === assetId)?.name ??
+    assetId
+  )
 }
 
 function formatWhen(ts: number | null | undefined): string {
@@ -142,16 +203,9 @@ function RelatedLink({
 }) {
   return (
     <li>
-      <Link
-        as="button"
-        type="button"
-        onClick={(e) => {
-          e.preventDefault()
-          onSelect()
-        }}
-      >
+      <button type="button" className="text-link" onClick={onSelect}>
         {label}
-      </Link>
+      </button>
     </li>
   )
 }
@@ -209,6 +263,14 @@ export function InvestigationDrawer() {
         return resolved.entity.name
       case 'attraction':
         return resolved.entity.name
+      case 'charger':
+        return resolved.entity.id
+      case 'incubator':
+        return resolved.entity.name
+      case 'labMachine':
+        return resolved.entity.name
+      case 'safariRoute':
+        return resolved.entity.name
       case 'incident':
         return resolved.entity.title
       case 'unknown':
@@ -224,17 +286,27 @@ export function InvestigationDrawer() {
       case 'dinosaur':
         return `Dinosaur · ${resolved.entity.id}`
       case 'vehicle':
-        return `Vehicle · route ${resolved.entity.routeId}`
+        return `Vehicle · ${resolved.entity.model} · route ${resolved.entity.routeId}`
       case 'infrastructure':
         return `Infrastructure · ${resolved.entity.kind} · ${resolved.entity.id}`
       case 'attraction':
         return `Attraction · ${resolved.entity.zone} · ${resolved.entity.id}`
+      case 'charger':
+        return `Charger · ${resolved.entity.id}`
+      case 'incubator': {
+        const species = park.species.find((s) => s.id === resolved.entity.speciesId)
+        return `Incubator · ${species?.displayName ?? resolved.entity.speciesId}`
+      }
+      case 'labMachine':
+        return `Lab machine · ${resolved.entity.kind} · ${resolved.entity.id}`
+      case 'safariRoute':
+        return `Safari route · ${resolved.entity.id}`
       case 'incident':
         return `Incident · ${resolved.entity.id}`
       case 'unknown':
         return 'Unknown asset'
     }
-  }, [resolved])
+  }, [resolved, park.species])
 
   const freshness = useMemo(() => {
     if (!resolved) return null
@@ -246,6 +318,18 @@ export function InvestigationDrawer() {
       case 'infrastructure':
         lastReadingAt = resolved.entity.lastReadingAt
         break
+      case 'charger':
+        lastReadingAt = resolved.entity.lastReadingAt
+        break
+      case 'vehicle':
+        lastReadingAt = resolved.entity.lastReadingAt
+        break
+      case 'incubator':
+        lastReadingAt = resolved.entity.lastReadingAt
+        break
+      case 'labMachine':
+        lastReadingAt = resolved.entity.lastReadingAt
+        break
       case 'dinosaur': {
         const enc = park.enclosures.find((e) => e.id === resolved.entity.enclosureId)
         lastReadingAt = enc?.lastReadingAt
@@ -255,7 +339,16 @@ export function InvestigationDrawer() {
         lastReadingAt = undefined
     }
 
-    if (lastReadingAt == null && resolved.type !== 'enclosure' && resolved.type !== 'infrastructure' && resolved.type !== 'dinosaur') {
+    if (
+      lastReadingAt == null &&
+      resolved.type !== 'enclosure' &&
+      resolved.type !== 'infrastructure' &&
+      resolved.type !== 'dinosaur' &&
+      resolved.type !== 'charger' &&
+      resolved.type !== 'vehicle' &&
+      resolved.type !== 'incubator' &&
+      resolved.type !== 'labMachine'
+    ) {
       return null
     }
 
@@ -288,6 +381,14 @@ export function InvestigationDrawer() {
         return resolved.entity.status
       case 'attraction':
         return resolved.entity.status === 'closed' ? 'critical' : resolved.entity.status
+      case 'charger':
+        return chargerOperationalStatus(resolved.entity, now, config.staleThresholdSec)
+      case 'incubator':
+        return incubatorOperationalStatus(resolved.entity, now, config.staleThresholdSec)
+      case 'labMachine':
+        return machineOperationalStatus(resolved.entity, now, config.staleThresholdSec)
+      case 'safariRoute':
+        return safariRouteOperationalStatus(resolved.entity.status)
       case 'incident':
         return severityStatus(resolved.entity.severity)
       default:
@@ -345,19 +446,27 @@ export function InvestigationDrawer() {
     }
     if (resolved.type === 'vehicle') {
       const v = resolved.entity
-      return [
+      const nextDeparture = park.safariRoutes
+        .flatMap((route) =>
+          route.departures
+            .filter((dep) => dep.vehicleId === v.id)
+            .map((dep) => ({ ...dep, routeName: route.name })),
+        )
+        .sort((a, b) => a.departsAt - b.departsAt)[0]
+      const rows: ReadingRow[] = [
+        { key: 'model', label: 'Model', value: v.model },
         {
           key: 'batteryPct',
           label: 'Battery',
           value: formatNumber(v.batteryPct, '%'),
-          threshold: 'warn < 30%',
+          threshold: `coverage min ${FLEET_BATTERY_MIN_PCT}%`,
           status: deriveOperationalStatus({
             value: v.batteryPct,
-            lastReadingAt: now,
+            lastReadingAt: v.lastReadingAt,
             now,
             staleThresholdSec: config.staleThresholdSec,
-            warnBelow: 30,
-            critBelow: 15,
+            warnBelow: FLEET_BATTERY_MIN_PCT,
+            critBelow: 20,
           }),
         },
         { key: 'readiness', label: 'Readiness', value: v.readiness },
@@ -367,6 +476,14 @@ export function InvestigationDrawer() {
           value: `${v.occupiedSeats} / ${v.seats}`,
         },
       ]
+      if (nextDeparture) {
+        rows.push({
+          key: 'nextDeparture',
+          label: 'Next departure',
+          value: `${formatWhen(nextDeparture.departsAt)} · ${nextDeparture.routeName}`,
+        })
+      }
+      return rows
     }
     if (resolved.type === 'attraction') {
       const a = resolved.entity
@@ -420,8 +537,164 @@ export function InvestigationDrawer() {
         },
       ]
     }
+    if (resolved.type === 'charger') {
+      const c = resolved.entity
+      const status = chargerOperationalStatus(c, now, config.staleThresholdSec)
+      return [
+        {
+          key: 'powered',
+          label: 'Powered',
+          value: c.powered ? 'Yes' : 'No',
+          status: c.powered ? 'normal' : 'critical',
+        },
+        {
+          key: 'available',
+          label: 'Available',
+          value: c.available ? 'Yes' : 'No',
+          status,
+        },
+      ]
+    }
+    if (resolved.type === 'incubator') {
+      const inc = resolved.entity
+      const species = park.species.find((s) => s.id === inc.speciesId)
+      const status = incubatorOperationalStatus(inc, now, config.staleThresholdSec)
+      const rows: ReadingRow[] = [
+        {
+          key: 'species',
+          label: 'Species',
+          value: species?.displayName ?? inc.speciesId,
+        },
+        {
+          key: 'door',
+          label: 'Door',
+          value: inc.door,
+          status: inc.door === 'open' ? 'warning' : inc.door === 'unknown' ? 'unknown' : 'normal',
+        },
+        {
+          key: 'powered',
+          label: 'Powered',
+          value: inc.powered ? 'Yes' : 'No',
+          status: inc.powered ? 'normal' : 'warning',
+        },
+        {
+          key: 'expectedHatchAt',
+          label: 'Expected hatch',
+          value: formatWhen(inc.expectedHatchAt),
+          threshold: `hatch alert ≤ ${config.hatchAlertDays} days`,
+          status,
+        },
+        {
+          key: 'tempC',
+          label: 'Temperature',
+          value: formatNumber(inc.tempC, '°C'),
+          threshold: `${inc.tempRangeC.min}–${inc.tempRangeC.max}°C`,
+          status: deriveOperationalStatus({
+            value: inc.tempC,
+            lastReadingAt: inc.lastReadingAt,
+            now,
+            staleThresholdSec: config.staleThresholdSec,
+            warnBelow: inc.tempRangeC.min,
+            warnAbove: inc.tempRangeC.max,
+          }),
+        },
+        {
+          key: 'humidityPct',
+          label: 'Humidity',
+          value: formatNumber(inc.humidityPct, '%'),
+          threshold: `${inc.humidityRangePct.min}–${inc.humidityRangePct.max}%`,
+          status: deriveOperationalStatus({
+            value: inc.humidityPct,
+            lastReadingAt: inc.lastReadingAt,
+            now,
+            staleThresholdSec: config.staleThresholdSec,
+            warnBelow: inc.humidityRangePct.min,
+            warnAbove: inc.humidityRangePct.max,
+          }),
+        },
+      ]
+      for (const egg of inc.eggs) {
+        const eggSpecies = park.species.find((s) => s.id === egg.speciesId)
+        const inRange =
+          egg.weightG != null &&
+          egg.weightG >= egg.weightRangeG.min &&
+          egg.weightG <= egg.weightRangeG.max
+        rows.push({
+          key: egg.id,
+          label: `Egg · ${eggSpecies?.displayName ?? egg.speciesId}`,
+          value: egg.weightG == null ? '—' : `${egg.weightG} g`,
+          threshold: `${egg.weightRangeG.min}–${egg.weightRangeG.max} g`,
+          status: egg.weightG == null ? 'unknown' : inRange ? 'normal' : 'warning',
+        })
+      }
+      return rows
+    }
+    if (resolved.type === 'labMachine') {
+      const machine = resolved.entity
+      const status = machineOperationalStatus(machine, now, config.staleThresholdSec)
+      const rows: ReadingRow[] = [
+        {
+          key: 'powered',
+          label: 'Powered',
+          value: machine.powered ? 'Yes' : 'No',
+          status: machine.powered ? 'normal' : 'warning',
+        },
+      ]
+      if (machine.tempRangeC != null) {
+        rows.push({
+          key: 'tempC',
+          label: 'Temperature',
+          value: formatNumber(machine.tempC, '°C'),
+          threshold: `${machine.tempRangeC.min}–${machine.tempRangeC.max}°C`,
+          status: deriveOperationalStatus({
+            value: machine.tempC,
+            lastReadingAt: machine.lastReadingAt,
+            now,
+            staleThresholdSec: config.staleThresholdSec,
+            warnBelow: machine.tempRangeC.min,
+            warnAbove: machine.tempRangeC.max,
+          }),
+        })
+      }
+      rows.push({
+        key: 'kind',
+        label: 'Kind',
+        value: machine.kind,
+        status,
+      })
+      return rows
+    }
+    if (resolved.type === 'safariRoute') {
+      const route = resolved.entity
+      const next = route.departures
+        .slice()
+        .sort((a, b) => a.departsAt - b.departsAt)
+        .slice(0, 3)
+      const rows: ReadingRow[] = [
+        {
+          key: 'status',
+          label: 'Route status',
+          value: route.status,
+          status: safariRouteOperationalStatus(route.status),
+        },
+        {
+          key: 'stops',
+          label: 'Stops',
+          value: String(route.stopEnclosureIds.length),
+        },
+      ]
+      next.forEach((dep, i) => {
+        const utilPct = dep.seats === 0 ? 0 : Math.round((dep.occupied / dep.seats) * 100)
+        rows.push({
+          key: `dep-${dep.id}`,
+          label: i === 0 ? 'Next departure' : `Departure ${i + 1}`,
+          value: `${formatWhen(dep.departsAt)} · ${dep.vehicleId} · ${dep.occupied}/${dep.seats} (${utilPct}%)`,
+        })
+      })
+      return rows
+    }
     return []
-  }, [resolved, park.species, park.enclosures, now, config])
+  }, [resolved, park.species, park.enclosures, park.safariRoutes, now, config])
 
   const relatedAssets = useMemo(() => {
     if (!resolved) return [] as { id: string; label: string; kind: 'asset' | 'incident' }[]
@@ -442,11 +715,9 @@ export function InvestigationDrawer() {
     }
     if (resolved.type === 'infrastructure') {
       for (const supportId of resolved.entity.supports) {
-        const enc = park.enclosures.find((e) => e.id === supportId)
-        const attr = park.attractions.find((a) => a.id === supportId)
         links.push({
           id: supportId,
-          label: enc?.name ?? attr?.name ?? supportId,
+          label: assetLabel(park, supportId),
           kind: 'asset',
         })
       }
@@ -457,16 +728,46 @@ export function InvestigationDrawer() {
         links.push({ id: encId, label: enc?.name ?? encId, kind: 'asset' })
       }
     }
+    if (resolved.type === 'charger') {
+      for (const v of park.vehicles.filter((x) => x.chargerId === resolved.entity.id)) {
+        links.push({ id: v.id, label: v.id, kind: 'asset' })
+      }
+      for (const infra of park.infrastructure.filter((i) => i.supports.includes(resolved.entity.id))) {
+        links.push({ id: infra.id, label: infra.name, kind: 'asset' })
+      }
+    }
+    if (resolved.type === 'incubator') {
+      // Species and eggs are shown as readings, not related asset links.
+    }
+    if (resolved.type === 'labMachine') {
+      for (const infra of park.infrastructure.filter((i) => i.supports.includes(resolved.entity.id))) {
+        links.push({ id: infra.id, label: infra.name, kind: 'asset' })
+      }
+    }
+    if (resolved.type === 'safariRoute') {
+      for (const encId of resolved.entity.stopEnclosureIds) {
+        const enc = park.enclosures.find((e) => e.id === encId)
+        links.push({ id: encId, label: enc?.name ?? encId, kind: 'asset' })
+      }
+      for (const v of park.vehicles.filter((x) => x.routeId === resolved.entity.id)) {
+        links.push({ id: v.id, label: v.id, kind: 'asset' })
+      }
+      for (const dep of resolved.entity.departures) {
+        if (!links.some((l) => l.id === dep.vehicleId)) {
+          links.push({ id: dep.vehicleId, label: dep.vehicleId, kind: 'asset' })
+        }
+      }
+    }
+    if (resolved.type === 'vehicle') {
+      const route = park.safariRoutes.find((r) => r.id === resolved.entity.routeId)
+      if (route) links.push({ id: route.id, label: route.name, kind: 'asset' })
+      if (resolved.entity.chargerId) {
+        links.push({ id: resolved.entity.chargerId, label: resolved.entity.chargerId, kind: 'asset' })
+      }
+    }
     if (resolved.type === 'incident') {
       for (const assetId of resolved.entity.assetIds) {
-        const name =
-          park.enclosures.find((e) => e.id === assetId)?.name ??
-          park.dinosaurs.find((d) => d.id === assetId)?.name ??
-          park.vehicles.find((v) => v.id === assetId)?.id ??
-          park.infrastructure.find((i) => i.id === assetId)?.name ??
-          park.attractions.find((a) => a.id === assetId)?.name ??
-          assetId
-        links.push({ id: assetId, label: name, kind: 'asset' })
+        links.push({ id: assetId, label: assetLabel(park, assetId), kind: 'asset' })
       }
     }
     return links
@@ -499,6 +800,27 @@ export function InvestigationDrawer() {
   const trendKey = readings.find((r) => history.some((h) => h.values[r.key] != null))?.key
 
   const closeDrawer = () => setSelection(null)
+
+  const heroArt = useMemo(() => {
+    if (!resolved) return null
+    switch (resolved.type) {
+      case 'dinosaur': {
+        const speciesId = resolved.entity.speciesId
+        return speciesIllustration(speciesId) ?? speciesSilhouette(speciesId) ?? null
+      }
+      case 'vehicle':
+        return facilityArt('vehicle') ?? null
+      case 'charger':
+        return facilityArt('charger') ?? null
+      case 'incubator':
+        return facilityArt('incubator') ?? null
+      case 'labMachine':
+        if (resolved.entity.kind === 'airlock') return null
+        return facilityArt('cold-storage') ?? null
+      default:
+        return null
+    }
+  }, [resolved])
 
   return (
     <Drawer
@@ -548,6 +870,9 @@ export function InvestigationDrawer() {
     >
       {resolved ? (
         <div className="investigation-drawer">
+          {heroArt ? (
+            <img className="investigation-drawer__art" src={heroArt} alt="" data-art="hero" />
+          ) : null}
           <Section title="Status">
             <StatusIndicator
               status={primaryStatus}

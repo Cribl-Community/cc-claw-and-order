@@ -7,6 +7,8 @@ export interface Species {
   displayName: string
   diet: Diet
   inherentThreat: 1 | 2 | 3 | 4 | 5
+  /** 1 slow … 5 fast. Used for enclosure evasion, not a measured reading. */
+  agility: 1 | 2 | 3 | 4 | 5
   sizeClass: 'S' | 'M' | 'L' | 'XL'
   behaviorTags: string[]
   tempRangeC: { min: number; max: number }
@@ -62,12 +64,14 @@ export interface SafariRoute {
 
 export interface Vehicle {
   id: string
+  model: string
   routeId: string
   batteryPct: number | null
   readiness: 'ready' | 'charging' | 'maintenance' | 'offline' | 'unknown'
   chargerId: string | null
   seats: number
   occupiedSeats: number
+  lastReadingAt: number
 }
 
 export interface Charger {
@@ -77,18 +81,41 @@ export interface Charger {
   lastReadingAt: number
 }
 
+export interface Egg {
+  id: string
+  speciesId: string
+  weightG: number | null
+  weightRangeG: { min: number; max: number }
+}
+
 export interface Incubator {
   id: string
+  name: string
   speciesId: string
   expectedHatchAt: number
   tempC: number | null
   humidityPct: number | null
-  status: OperationalStatus
+  tempRangeC: { min: number; max: number }
+  humidityRangePct: { min: number; max: number }
+  door: 'closed' | 'open' | 'unknown'
+  powered: boolean
+  eggs: Egg[]
+  lastReadingAt: number
+}
+
+export interface LabMachine {
+  id: string
+  name: string
+  kind: 'cold-storage' | 'freezer' | 'airlock'
+  tempC: number | null
+  tempRangeC: { min: number; max: number } | null
+  powered: boolean
+  lastReadingAt: number
 }
 
 export interface LabState {
   incubators: Incubator[]
-  coldStorage: { tempC: number | null; status: OperationalStatus; lastReadingAt: number }
+  machines: LabMachine[]
 }
 
 export interface Infrastructure {
@@ -152,7 +179,7 @@ export interface ConfigSettings {
   scenario: ScenarioId
   paused: boolean
   tickMs: number
-  defaultLanding: '/' | '/enclosures' | '/compatibility' | '/services' | '/settings'
+  defaultLanding: '/' | '/enclosures' | '/compatibility' | '/services' | '/fleet' | '/lab' | '/settings'
   staleThresholdSec: number
   density: 'compact' | 'comfortable'
   guestCapacity: number
