@@ -219,33 +219,29 @@ export function ParkProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setScenario = useCallback((id: ScenarioId) => {
-    setConfig((c) => {
-      const next = { ...c, scenario: id }
-      configRef.current = next
-      setPark((p) => applyScenario({ ...p, scenario: id }, id, next))
-      return next
-    })
+    const next = { ...configRef.current, scenario: id }
+    configRef.current = next
+    setConfig(next)
+    setPark((p) => applyScenario({ ...p, scenario: id }, id, next))
   }, [])
 
   const resetSimulation = useCallback(
     async (opts?: { clearOperator?: boolean }) => {
-      setConfig((c) => {
-        const next: ConfigSettings = {
-          ...c,
-          scenario: 'normal',
-          paused: false,
-        }
-        configRef.current = next
-        const seed = createSeedPark()
-        setPark(
-          applyScenario(
-            { ...seed, scenario: 'normal', paused: false },
-            'normal',
-            next,
-          ),
-        )
-        return next
-      })
+      const next: ConfigSettings = {
+        ...configRef.current,
+        scenario: 'normal',
+        paused: false,
+      }
+      configRef.current = next
+      setConfig(next)
+      const seed = createSeedPark()
+      setPark(
+        applyScenario(
+          { ...seed, scenario: 'normal', paused: false },
+          'normal',
+          next,
+        ),
+      )
 
       if (opts?.clearOperator) {
         setOperator(EMPTY_OPERATOR)
