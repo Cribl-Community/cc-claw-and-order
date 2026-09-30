@@ -64,7 +64,7 @@ Why this is the preferred path:
 
 ### If The App Is Not Yet In The Cribl Marketplace
 1. Go to the app's GitHub repository.
-2. Open the Releases section, or use the `build/claw-and-order-1.0.0.tgz` package from this repository.
+2. Open the Releases section, or use the `build/claw-and-order-1.0.1.tgz` package from this repository.
 3. Download the `.tgz` app package for the version you want.
 4. In Cribl, go to Apps and choose import from file.
 5. Upload the downloaded `.tgz` file.
@@ -184,7 +184,7 @@ Check:
 npm install
 npm run dev
 npm test
-npm run package -- --version 1.0.0
+npm run package -- --version 1.0.1
 ```
 
 `npm run package` builds the app and writes `build/claw-and-order-<version>.tgz`. With no version flag it increments the patch version before packing.
@@ -229,7 +229,7 @@ package.json
 
 ## Versioning And Releases
 
-* Follow semantic versioning. Current package version is `1.0.0`.
+* Follow semantic versioning. Current package version is `1.0.1`.
 * `npm run package` bumps the patch version unless you pass `--version`, `--minor`, or `--major`.
 * Install a specific build by uploading the matching `.tgz`.
 
@@ -249,7 +249,7 @@ Use this table as the canonical source for gallery fields. Keep the left column 
 |---|---|
 | App Name | Claw & Order |
 | App ID | claw-and-order |
-| Version | 1.0.0 |
+| Version | 1.0.1 |
 | Author | John Owen |
 | Support Model | community-built |
 | Support Label | Community Built |
