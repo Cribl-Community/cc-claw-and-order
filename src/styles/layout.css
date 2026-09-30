@@ -272,3 +272,53 @@ body,
   gap: token('spacing.md');
 }
 
+.compat-form {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.md');
+}
+
+.compat-checkbox-block {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.sm');
+}
+
+.compat-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.xs');
+  max-height: 14rem;
+  overflow: auto;
+  padding: token('spacing.sm');
+  border: 1px solid token('color.border.neutral.subtle');
+  background: token('color.background.neutral.subtle');
+}
+
+.compat-result {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.md');
+}
+
+.compat-result__verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: token('spacing.sm');
+}
+
+.compat-result__block {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.xs');
+}
+
+.compat-result__list {
+  margin: 0;
+  padding-inline-start: token('spacing.lg');
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.xs');
+}
+
