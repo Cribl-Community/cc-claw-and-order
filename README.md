@@ -10,18 +10,18 @@ Claw & Order is a Cribl app for park operations. It gives operators a single vie
 
 ## Screenshots
 
+Full-window captures (1920×1080) of the control room.
+
 ![Park Overview — KPIs, park map, and incident list](docs/screenshots/overview.png)
 
 | | |
 |:--:|:--:|
-| ![Storm + Outage on Park Overview](docs/screenshots/overview-storm.png) | ![Enclosures & Dinosaurs catalog](docs/screenshots/enclosures.png) |
-| *Storm + Outage on Park Overview* | *Enclosures & Dinosaurs* |
-| ![Compatibility Planner with species art](docs/screenshots/compatibility.png) | ![Fleet departures and EV readiness](docs/screenshots/fleet.png) |
-| *Compatibility Planner* | *Fleet departures & EV readiness* |
-
-![Lab incubators, airlock, and cold storage](docs/screenshots/lab.png)
-
-*Lab — incubators, airlock, and cold storage*
+| ![Storm + Outage on Park Overview with investigation drawer](docs/screenshots/investigation-drawer.png) | ![Enclosures & Dinosaurs catalog](docs/screenshots/enclosures.png) |
+| *Storm + Outage and investigation drawer* | *Enclosures & Dinosaurs* |
+| ![Compatibility Planner](docs/screenshots/compatibility.png) | ![Fleet departures and EV readiness](docs/screenshots/fleet.png) |
+| *Compatibility Planner* | *Fleet* |
+| ![Park Services](docs/screenshots/services.png) | ![Lab incubators and cold storage](docs/screenshots/lab.png) |
+| *Park Services* | *Lab* |
 
 ## What This App Does
 
@@ -199,6 +199,7 @@ Check:
 npm install
 npm run dev
 npm test
+npm run screenshots   # requires npm run dev; writes docs/screenshots/*.png at 1920×1080
 npm run package -- --version 1.0.2
 ```
 
