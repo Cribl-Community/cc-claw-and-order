@@ -8,6 +8,21 @@ This README uses fixed section names and a fixed metadata table so it can be ren
 
 Claw & Order is a Cribl app for park operations. It gives operators a single view of containment, animal welfare, attractions, safari fleet, and the hatchery lab — then lets them investigate an incident or asset without leaving the console.
 
+## Screenshots
+
+![Park Overview — KPIs, park map, and incident list](docs/screenshots/overview.png)
+
+| | |
+|:--:|:--:|
+| ![Storm + Outage on Park Overview](docs/screenshots/overview-storm.png) | ![Enclosures & Dinosaurs catalog](docs/screenshots/enclosures.png) |
+| *Storm + Outage on Park Overview* | *Enclosures & Dinosaurs* |
+| ![Compatibility Planner with species art](docs/screenshots/compatibility.png) | ![Fleet departures and EV readiness](docs/screenshots/fleet.png) |
+| *Compatibility Planner* | *Fleet departures & EV readiness* |
+
+![Lab incubators, airlock, and cold storage](docs/screenshots/lab.png)
+
+*Lab — incubators, airlock, and cold storage*
+
 ## What This App Does
 
 Claw & Order is the park’s day-to-day control room. Live park state drives every view. Operator acknowledgments, investigation notes, and threshold settings persist in the app-scoped Cribl KV store so the next shift picks up where the last one left off.
@@ -203,6 +218,8 @@ Main source:
 ## Project Layout
 
 ```text
+docs/
+  screenshots/         Marketplace README gallery
 src/
   App.tsx
   main.tsx
