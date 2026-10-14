@@ -26,7 +26,7 @@ export function StatusIndicator({
   /** Icon + text only. Use in tight metric cards. */
   compact?: boolean
 }) {
-  const meta = STATUS_META[status]
+  const meta = STATUS_META[status] ?? STATUS_META.unknown
   const Icon = meta.Icon
   const text = label ?? meta.label
 

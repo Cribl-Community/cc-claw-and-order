@@ -57,6 +57,7 @@ const injectScriptFromQueryPlugin = () => {
       }
       appName = appName || 'unknown';
       const tags: Array<{ tag: string; attrs?: Record<string, string>; children?: string; injectTo: 'head-prepend' }> = [];
+      // Keep ahead of Vite's ./assets CSS/JS so deep-route hard loads resolve assets.
       tags.push({
         tag: 'script',
         children: `window.CRIBL_APP_ID = '__dev__${appName}';`,

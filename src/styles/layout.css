@@ -21,6 +21,38 @@ body,
   padding: token('spacing.lg');
 }
 
+.app-error-boundary {
+  display: flex;
+  flex-direction: column;
+  gap: token('spacing.md');
+  max-width: 36rem;
+  padding: token('spacing.xl');
+  color: token('color.foreground.default');
+}
+
+.app-error-boundary__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.app-error-boundary__message {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.875rem;
+  color: token('color.foreground.danger.default');
+  word-break: break-word;
+}
+
+.app-error-boundary__retry {
+  align-self: flex-start;
+  padding: token('spacing.sm') token('spacing.md');
+  border: 1px solid token('color.border.neutral.default');
+  border-radius: token('radius.md');
+  background: token('color.background.neutral.default');
+  color: token('color.foreground.default');
+  cursor: pointer;
+}
+
 @media (min-width: 1024px) {
   .app-shell {
     grid-template-columns: auto minmax(0, 1fr);

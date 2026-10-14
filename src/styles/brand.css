@@ -71,8 +71,13 @@ body.brand-root :has(> textarea) {
   background-color: #0b1c2c;
 }
 
-/* Multi-select trigger is a role=group shell with a hardcoded light fill. */
-body.brand-root div[role='group']:not(.compat-checkbox-list) {
+/*
+ * Capra multi-select triggers use role=group with a hardcoded light fill.
+ * Scope tightly — a global [role=group] rule also hits Table/Toggle internals
+ * and can blank dense Capra pages (Enclosures) under Cloud sandbox styling.
+ */
+body.brand-root .compat-multiselect[role='group'],
+body.brand-root button[aria-haspopup='listbox'][role='group'] {
   background-color: #0b1c2c;
   color: #f6ebd2;
 }
