@@ -1,6 +1,71 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!--
+      Must run before Vite injects ./assets/* links. Vite base is './'; without
+      <base>, a hard load of /app-ui/<id>/enclosures resolves assets under
+      .../enclosures/assets/* and the app never boots (blank page).
+    -->
+    <script>
+      ;(function () {
+        var base = window.CRIBL_BASE_PATH
+        if (!base) {
+          var match = String(location.pathname || '').match(/^(\/app-ui\/[^/]+)/)
+          base = match ? match[1] : '/'
+        }
+        base = String(base).replace(/\/+$/, '')
+        if (!base) base = '/'
+        var href = base.charAt(base.length - 1) === '/' ? base : base + '/'
+        if (base === '/') href = '/'
+        if (!document.querySelector('base')) {
+          var baseEl = document.createElement('base')
+          baseEl.href = href
+          document.head.insertBefore(baseEl, document.head.firstChild)
+        }
+
+        function memoryStorage() {
+          var map = Object.create(null)
+          return {
+            get length() {
+              return Object.keys(map).length
+            },
+            key: function (i) {
+              return Object.keys(map)[i] || null
+            },
+            getItem: function (k) {
+              return Object.prototype.hasOwnProperty.call(map, k) ? map[k] : null
+            },
+            setItem: function (k, v) {
+              map[k] = String(v)
+            },
+            removeItem: function (k) {
+              delete map[k]
+            },
+            clear: function () {
+              map = Object.create(null)
+            },
+          }
+        }
+        function install(name) {
+          try {
+            var s = window[name]
+            var t = '__claw_probe__'
+            s.setItem(t, '1')
+            s.removeItem(t)
+          } catch (e) {
+            try {
+              Object.defineProperty(window, name, {
+                value: memoryStorage(),
+                configurable: true,
+                enumerable: true,
+              })
+            } catch (err) {}
+          }
+        }
+        install('localStorage')
+        install('sessionStorage')
+      })()
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

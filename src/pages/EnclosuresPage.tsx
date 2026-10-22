@@ -601,6 +601,7 @@ export function EnclosuresPage() {
       <div className="app-grid-span-12">
         {tab === 'dinosaurs' ? (
           <Table
+            aria-label="Dinosaurs"
             columns={dinoColumns}
             visibleColumns={[
               'name',
@@ -626,6 +627,7 @@ export function EnclosuresPage() {
 
         {tab === 'enclosures' ? (
           <Table
+            aria-label="Enclosures"
             columns={enclosureColumns}
             visibleColumns={[
               'name',
@@ -650,6 +652,7 @@ export function EnclosuresPage() {
 
         {tab === 'species' ? (
           <Table
+            aria-label="Species"
             columns={speciesColumns}
             visibleColumns={[
               'name',

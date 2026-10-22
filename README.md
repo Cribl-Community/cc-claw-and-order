@@ -8,6 +8,21 @@ This README uses fixed section names and a fixed metadata table so it can be ren
 
 Claw & Order is a Cribl app for park operations. It gives operators a single view of containment, animal welfare, attractions, safari fleet, and the hatchery lab — then lets them investigate an incident or asset without leaving the console.
 
+## Screenshots
+
+Full-window captures (1920×1080) of the control room.
+
+![Park Overview — KPIs, park map, and incident list](docs/screenshots/overview.png)
+
+| | |
+|:--:|:--:|
+| ![Storm + Outage on Park Overview with investigation drawer](docs/screenshots/investigation-drawer.png) | ![Enclosures & Dinosaurs catalog](docs/screenshots/enclosures.png) |
+| *Storm + Outage and investigation drawer* | *Enclosures & Dinosaurs* |
+| ![Compatibility Planner](docs/screenshots/compatibility.png) | ![Fleet departures and EV readiness](docs/screenshots/fleet.png) |
+| *Compatibility Planner* | *Fleet* |
+| ![Park Services](docs/screenshots/services.png) | ![Lab incubators and cold storage](docs/screenshots/lab.png) |
+| *Park Services* | *Lab* |
+
 ## What This App Does
 
 Claw & Order is the park’s day-to-day control room. Live park state drives every view. Operator acknowledgments, investigation notes, and threshold settings persist in the app-scoped Cribl KV store so the next shift picks up where the last one left off.
@@ -64,7 +79,7 @@ Why this is the preferred path:
 
 ### If The App Is Not Yet In The Cribl Marketplace
 1. Go to the app's GitHub repository.
-2. Open the Releases section, or use the `build/claw-and-order-1.0.1.tgz` package from this repository.
+2. Open the Releases section, or use the `build/claw-and-order-1.0.2.tgz` package from this repository.
 3. Download the `.tgz` app package for the version you want.
 4. In Cribl, go to Apps and choose import from file.
 5. Upload the downloaded `.tgz` file.
@@ -184,7 +199,8 @@ Check:
 npm install
 npm run dev
 npm test
-npm run package -- --version 1.0.1
+npm run screenshots   # requires npm run dev; writes docs/screenshots/*.png at 1920×1080
+npm run package -- --version 1.0.2
 ```
 
 `npm run package` builds the app and writes `build/claw-and-order-<version>.tgz`. With no version flag it increments the patch version before packing.
@@ -203,6 +219,8 @@ Main source:
 ## Project Layout
 
 ```text
+docs/
+  screenshots/         Marketplace README gallery
 src/
   App.tsx
   main.tsx
@@ -229,7 +247,7 @@ package.json
 
 ## Versioning And Releases
 
-* Follow semantic versioning. Current package version is `1.0.1`.
+* Follow semantic versioning. Current package version is `1.0.2`.
 * `npm run package` bumps the patch version unless you pass `--version`, `--minor`, or `--major`.
 * Install a specific build by uploading the matching `.tgz`.
 
@@ -249,7 +267,7 @@ Use this table as the canonical source for gallery fields. Keep the left column 
 |---|---|
 | App Name | Claw & Order |
 | App ID | claw-and-order |
-| Version | 1.0.1 |
+| Version | 1.0.2 |
 | Author | John Owen |
 | Support Model | community-built |
 | Support Label | Community Built |
